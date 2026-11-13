@@ -1,4 +1,5 @@
 import { $, $$, reduced, pageSignal } from './util';
+import { initLightbox, initFigures } from './lightbox';
 
 /* ---------- 目录：滚动高亮 + 滑动指示条 ---------- */
 function initToc() {
@@ -48,52 +49,6 @@ function initCopy() {
         b.querySelector('span')!.textContent = '复制失败';
       }
     });
-  });
-}
-
-/* ---------- 图片放大（FLIP） ---------- */
-function initZoom() {
-  $$<HTMLImageElement>('[data-article] img').forEach((img) => {
-    if (img.closest('a')) return;
-    img.classList.add('zoomable');
-    img.tabIndex = 0;
-    img.setAttribute('role', 'button');
-    img.setAttribute('aria-label', `放大图片：${img.alt}`);
-    const open = () => {
-      const r = img.getBoundingClientRect();
-      const ov = document.createElement('div');
-      ov.className = 'zoom';
-      const big = img.cloneNode() as HTMLImageElement;
-      big.removeAttribute('loading');
-      big.className = 'zoom__img';
-      big.removeAttribute('role');
-      big.removeAttribute('tabindex');
-      ov.appendChild(big);
-      document.body.appendChild(ov);
-      const nw = img.naturalWidth || r.width, nh = img.naturalHeight || r.height;
-      const s = Math.min((innerWidth * 0.92) / nw, (innerHeight * 0.86) / nh, 2.2);
-      const w = nw * s, h = nh * s;
-      Object.assign(big.style, { width: `${w}px`, height: `${h}px`, left: `${(innerWidth - w) / 2}px`, top: `${(innerHeight - h) / 2}px` });
-      const sx = r.width / w, tx = r.left - (innerWidth - w) / 2, ty = r.top - (innerHeight - h) / 2;
-      big.animate([{ transform: `translate(${tx}px, ${ty}px) scale(${sx})` }, { transform: 'none' }], { duration: reduced() ? 1 : 520, easing: 'cubic-bezier(.22,1,.36,1)' });
-      requestAnimationFrame(() => ov.classList.add('on'));
-      img.style.visibility = 'hidden';
-      const close = () => {
-        const r2 = img.getBoundingClientRect();
-        const sx2 = r2.width / w, tx2 = r2.left - (innerWidth - w) / 2, ty2 = r2.top - (innerHeight - h) / 2;
-        ov.classList.remove('on');
-        big.animate([{ transform: 'none' }, { transform: `translate(${tx2}px, ${ty2}px) scale(${sx2})` }], { duration: reduced() ? 1 : 420, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' })
-          .finished.then(() => { img.style.visibility = ''; ov.remove(); img.focus({ preventScroll: true }); });
-        removeEventListener('keydown', key);
-        removeEventListener('scroll', close);
-      };
-      const key = (e: KeyboardEvent) => e.key === 'Escape' && close();
-      ov.addEventListener('click', close);
-      addEventListener('keydown', key);
-      addEventListener('scroll', close, { once: true, passive: true });
-    };
-    img.addEventListener('click', open);
-    img.addEventListener('keydown', (e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), open()));
   });
 }
 
@@ -192,7 +147,8 @@ export function initPost() {
   document.body.setAttribute('data-reading', '');
   initToc();
   initCopy();
-  initZoom();
+  initFigures();
+  initLightbox();
   initFootnotes();
   initReader();
   initDock();

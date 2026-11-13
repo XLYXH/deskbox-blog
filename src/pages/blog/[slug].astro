@@ -1,6 +1,7 @@
 ---
 import { render } from 'astro:content';
-import { Image } from 'astro:assets';
+import { Picture, getImage } from 'astro:assets';
+import { blurDataURI } from '../../lib/blur.mjs';
 import Base from '../../layouts/Base.astro';
 import Icon from '../../components/Icon.astro';
 import { getPosts, fmtDate, wordCount, readingMinutes } from '../../lib/posts';
@@ -24,6 +25,8 @@ const minutes = readingMinutes(post.body ?? '');
 const series = d.series ? all.filter((p) => p.data.series?.name === d.series!.name).sort((a, b) => a.data.series!.order - b.data.series!.order) : [];
 const primary = (d.tags as string[])[0];
 const canonical = d.canonical;
+const coverFull = d.cover ? (await getImage({ src: d.cover, width: Math.min(d.cover.width, 2200), format: 'webp', quality: 85 })).src : '';
+const coverPh = d.cover ? await blurDataURI((d.cover as any).fsPath) : '';
 const jsonld = {
   '@context': 'https://schema.org',
   '@type': 'BlogPosting',
@@ -66,9 +69,9 @@ const jsonld = {
     </header>
 
     {d.cover && (
-      <figure class="post__cover wrap rise" style="--i:3">
-        <div class="post__cover-in">
-          <Image src={d.cover} alt={d.coverAlt ?? ''} widths={[480, 720, 1080, 1440]} sizes="(min-width: 1100px) 1040px, 100vw" loading="eager" fetchpriority="high" />
+      <figure class="post__cover wrap rise" style="--i:3" data-cover>
+        <div class="post__cover-in fig__frame" data-ph={coverPh ? '' : undefined} style={coverPh ? `--ph:url(${coverPh})` : undefined}>
+          <Picture src={d.cover} alt={d.coverAlt ?? ''} formats={['avif']} fallbackFormat="webp" widths={[480, 720, 1080, 1440].filter((w) => w < d.cover!.width).concat(d.cover.width)} sizes="(min-width: 1240px) 1200px, 100vw" loading="eager" fetchpriority="high" data-full={coverFull} />
         </div>
       </figure>
     )}
@@ -356,6 +359,8 @@ const jsonld = {
   }
 
   .post__end {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 420px;
     display: flex;
     align-items: center;
     gap: 8px;
