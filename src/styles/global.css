@@ -1,0 +1,467 @@
+/* ==========================================================================
+   DeskBox · 设计令牌
+   白天：纸面暖灰 + 墨色 + 焦橙；夜晚：深色桌面 + 台灯琥珀光
+   ========================================================================== */
+:root {
+  color-scheme: light;
+  --paper: #f1eee8;
+  --paper-2: #e8e4dc;
+  --card: #fbfaf7;
+  --card-2: #f6f4ef;
+  --ink: #1b1a17;
+  --ink-2: #57534b;
+  --ink-3: #8a857b;
+  --line: rgb(27 26 23 / 0.11);
+  --line-2: rgb(27 26 23 / 0.2);
+  --accent: #c2410c;
+  --accent-ink: #9a3412;
+  --accent-soft: rgb(234 88 12 / 0.1);
+  --glow: 255 138 46;
+  --glass: rgb(251 250 247 / 0.64);
+  --glass-edge: rgb(255 255 255 / 0.75);
+  --shadow: 0 1px 1px rgb(27 26 23 / 0.04), 0 8px 24px -10px rgb(27 26 23 / 0.16);
+  --shadow-lg: 0 2px 4px rgb(27 26 23 / 0.04), 0 30px 60px -24px rgb(27 26 23 / 0.28);
+  --grid: rgb(27 26 23 / 0.055);
+  --code-bg: #f7f5f0;
+  --mark: rgb(255 176 84 / 0.38);
+
+  --f-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    'Noto Sans CJK SC', 'Noto Sans SC', 'Source Han Sans SC', sans-serif;
+  --f-display: 'Fraunces', 'DeskBox Serif', 'Noto Serif CJK SC', 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC',
+    'STSong', serif;
+  --f-serif-body: 'Iowan Old Style', 'Noto Serif CJK SC', 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong',
+    'SimSun', serif;
+  --f-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'JetBrains Mono', Menlo, Consolas, 'Noto Sans Mono CJK SC',
+    monospace;
+
+  --wrap: 1240px;
+  --gutter: clamp(1.15rem, 4vw, 2.5rem);
+  --r-sm: 10px;
+  --r: 18px;
+  --r-lg: 28px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --nav-h: 64px;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper: #0f0e0c;
+  --paper-2: #0a0908;
+  --card: #171613;
+  --card-2: #1c1b17;
+  --ink: #ede9e1;
+  --ink-2: #aaa499;
+  --ink-3: #6f6a60;
+  --line: rgb(237 233 225 / 0.09);
+  --line-2: rgb(237 233 225 / 0.18);
+  --accent: #ffb054;
+  --accent-ink: #ffc785;
+  --accent-soft: rgb(255 176 84 / 0.1);
+  --glow: 255 168 76;
+  --glass: rgb(28 27 23 / 0.6);
+  --glass-edge: rgb(255 255 255 / 0.14);
+  --shadow: 0 1px 1px rgb(0 0 0 / 0.3), 0 10px 30px -12px rgb(0 0 0 / 0.6);
+  --shadow-lg: 0 2px 6px rgb(0 0 0 / 0.3), 0 40px 80px -30px rgb(0 0 0 / 0.8);
+  --grid: rgb(237 233 225 / 0.045);
+  --code-bg: #12110f;
+  --mark: rgb(255 176 84 / 0.28);
+}
+
+/* ---------- reset ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+* {
+  margin: 0;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--nav-h) + 24px);
+  background: var(--paper);
+  hanging-punctuation: allow-end;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 16px/1.7 var(--f-sans);
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  text-autospace: normal;
+  text-spacing-trim: trim-start;
+  overflow-x: clip;
+}
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+::selection {
+  background: var(--mark);
+  color: var(--ink);
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skip {
+  position: fixed;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--paper);
+  transition: top 0.2s;
+}
+.skip:focus {
+  top: 12px;
+}
+
+/* ---------- 背景：切割垫网格 + 纸面颗粒 ---------- */
+.mat {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: -1px -1px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 85%);
+}
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+[data-theme='dark'] .grain {
+  mix-blend-mode: screen;
+  opacity: 0.25;
+  filter: invert(1);
+}
+/* 跟随鼠标的台灯光 */
+.lamp-light {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    560px circle at var(--lx, 70%) var(--ly, -10%),
+    rgb(var(--glow) / 0.13),
+    rgb(var(--glow) / 0.04) 40%,
+    transparent 70%
+  );
+  transition: opacity 0.6s;
+}
+[data-theme='dark'] .lamp-light {
+  background: radial-gradient(
+    620px circle at var(--lx, 70%) var(--ly, -10%),
+    rgb(var(--glow) / 0.12),
+    rgb(var(--glow) / 0.035) 42%,
+    transparent 72%
+  );
+}
+
+/* ---------- 布局 ---------- */
+.wrap {
+  width: min(100% - 2 * var(--gutter), var(--wrap));
+  margin-inline: auto;
+}
+main {
+  flex: 1;
+  padding-top: calc(var(--nav-h) + clamp(28px, 5vw, 56px));
+}
+
+/* ---------- 文字工具 ---------- */
+.display {
+  font-family: var(--f-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  font-variation-settings: 'opsz' 120;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  font: 500 12px/1 var(--f-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.eyebrow::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+.mono {
+  font-family: var(--f-mono);
+}
+.muted {
+  color: var(--ink-2);
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 卡片与聚光边框 ---------- */
+.card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  isolation: isolate;
+}
+.spot::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(
+    280px circle at var(--mx, -999px) var(--my, -999px),
+    rgb(var(--glow) / 0.85),
+    rgb(var(--glow) / 0.15) 40%,
+    transparent 60%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: var(--spot-o, 0);
+  transition: opacity 0.4s;
+}
+.spot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    420px circle at var(--mx, -999px) var(--my, -999px),
+    rgb(var(--glow) / 0.07),
+    transparent 55%
+  );
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--spot-o, 0);
+  transition: opacity 0.4s;
+}
+
+/* ---------- 液态玻璃 ---------- */
+  .glass {
+    position: relative;
+    border-radius: 99px;
+    background: var(--glass);
+    backdrop-filter: blur(14px) saturate(1.6);
+    -webkit-backdrop-filter: blur(14px) saturate(1.6);
+    box-shadow:
+      inset 0 1px 0 var(--glass-edge),
+      inset 0 0 0 1px color-mix(in srgb, var(--glass-edge) 50%, transparent),
+      inset 0 -8px 16px -12px rgb(var(--glow) / 0.25),
+      0 10px 30px -14px rgb(0 0 0 / 0.3);
+    isolation: isolate;
+  }
+  .lg-svg .glass {
+    backdrop-filter: var(--lg-filter, blur(3px)) blur(5px) saturate(1.8) brightness(1.04);
+    -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  }
+  .glass::after {
+    /* 顶部高光弧 */
+    content: '';
+    position: absolute;
+    inset: 1px 14% auto;
+    height: 45%;
+    border-radius: 99px 99px 40% 40%;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0.35), transparent);
+    opacity: 0.55;
+    pointer-events: none;
+    z-index: -1;
+  }
+  [data-theme='dark'] .glass::after {
+    opacity: 0.12;
+  }
+
+[data-theme='dark'] main img {
+  filter: brightness(0.86) contrast(1.04);
+}
+
+/* ---------- 标签胶囊 ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  font: 500 12px/1 var(--f-sans);
+  color: var(--ink-2);
+  background: color-mix(in srgb, var(--card) 60%, transparent);
+  transition:
+    color 0.25s,
+    border-color 0.25s,
+    background 0.25s;
+  white-space: nowrap;
+}
+.chip::before {
+  content: '#';
+  font-family: var(--f-mono);
+  color: var(--accent);
+  opacity: 0.8;
+}
+a.chip:hover {
+  color: var(--ink);
+  border-color: var(--line-2);
+  background: var(--accent-soft);
+}
+
+/* ---------- 按钮 ---------- */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 20px;
+  border-radius: 99px;
+  font-weight: 500;
+  font-size: 15px;
+  background: var(--ink);
+  color: var(--paper);
+  transition:
+    transform 0.4s var(--ease),
+    background 0.3s;
+  will-change: transform;
+}
+.btn--ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+}
+.btn--ghost:hover {
+  background: var(--card);
+}
+.btn svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.4s var(--ease);
+}
+.btn:hover svg {
+  transform: translate(3px, -1px);
+}
+
+/* ---------- 入场动画（JS 加 .in） ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .rise {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.9s var(--ease),
+      transform 0.9s var(--ease);
+    transition-delay: calc(var(--i, 0) * 60ms);
+  }
+  .rise.in {
+    opacity: 1;
+    transform: none;
+  }
+  html:not(.js) .rise {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- 视图过渡 ---------- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.45s;
+  animation-timing-function: var(--ease);
+}
+::view-transition-group(*) {
+  animation-duration: 0.55s;
+  animation-timing-function: var(--ease);
+}
+html.theme-swap::view-transition-old(root),
+html.theme-swap::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html.theme-swap::view-transition-new(root) {
+  animation: lamp-reveal 0.75s var(--ease) both;
+}
+@keyframes lamp-reveal {
+  from {
+    clip-path: circle(0 at var(--tx, 100%) var(--ty, 0));
+  }
+  to {
+    clip-path: circle(var(--tr, 150vmax) at var(--tx, 100%) var(--ty, 0));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

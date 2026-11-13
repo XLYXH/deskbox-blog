@@ -1,0 +1,403 @@
+/* ==========================================================================
+   正文排版：中文长文优先，英文与代码兼顾
+   ========================================================================== */
+.prose {
+  --fs: 17.5px;
+  font-size: var(--fs);
+  line-height: 1.9;
+  letter-spacing: 0.012em;
+  color: color-mix(in srgb, var(--ink) 90%, var(--paper));
+  overflow-wrap: break-word;
+  line-break: strict;
+  text-wrap: pretty;
+}
+[data-read-size='s'] .prose { --fs: 16px; }
+[data-read-size='l'] .prose { --fs: 19.5px; }
+@media (max-width: 760px) {
+  .prose { --fs: 16.5px; line-height: 1.85; }
+  [data-read-size='s'] .prose { --fs: 15px; }
+  [data-read-size='l'] .prose { --fs: 18.5px; }
+}
+[data-read-font='serif'] .prose {
+  font-family: var(--f-serif-body);
+  letter-spacing: 0.02em;
+}
+.prose > * + * {
+  margin-top: 1.15em;
+}
+.prose p {
+  hanging-punctuation: allow-end;
+}
+.prose :is(h2, h3, h4) {
+  position: relative;
+  font-family: var(--f-display);
+  font-weight: 650;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  text-wrap: balance;
+  scroll-margin-top: calc(var(--nav-h) + 30px);
+}
+.prose h2 {
+  margin-top: 2.4em;
+  padding-top: 0.2em;
+  font-size: 1.55em;
+}
+.prose h2::before {
+  /* 小节编号，由 CSS 计数器生成 */
+  counter-increment: h2;
+  content: counter(h2, decimal-leading-zero);
+  display: block;
+  margin-bottom: 0.5em;
+  font: 500 12px/1 var(--f-mono);
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+.prose {
+  counter-reset: h2;
+}
+.prose h3 {
+  margin-top: 2em;
+  font-size: 1.22em;
+}
+.prose h4 {
+  margin-top: 1.8em;
+  font-size: 1.05em;
+}
+.prose .h-anchor {
+  margin-left: 0.35em;
+  font-family: var(--f-mono);
+  font-weight: 400;
+  color: var(--accent);
+  opacity: 0;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.prose :is(h2, h3, h4):hover .h-anchor,
+.prose .h-anchor:focus-visible {
+  opacity: 1;
+}
+.prose a:not(.h-anchor):not([data-footnote-ref]):not(.data-footnote-backref) {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-color 0.2s, color 0.2s, background 0.2s;
+}
+.prose a:not(.h-anchor):hover {
+  color: var(--accent-ink);
+  text-decoration-color: var(--accent);
+}
+.prose strong {
+  font-weight: 650;
+  color: var(--ink);
+  background: linear-gradient(transparent 62%, var(--mark) 62%);
+}
+.prose :is(ul, ol) {
+  padding-left: 1.4em;
+}
+.prose li + li {
+  margin-top: 0.4em;
+}
+.prose ul > li::marker {
+  color: var(--accent);
+  content: '— ';
+  font-family: var(--f-mono);
+}
+.prose ol > li::marker {
+  color: var(--accent);
+  font: 500 0.85em var(--f-mono);
+}
+.prose blockquote {
+  position: relative;
+  margin-block: 2em;
+  padding: 1.2em 1.4em 1.2em 3.2em;
+  border-radius: var(--r);
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-family: var(--f-serif-body);
+  font-size: 1.08em;
+  line-height: 1.85;
+  color: var(--ink);
+}
+.prose blockquote::before {
+  content: '“';
+  position: absolute;
+  left: 0.35em;
+  top: 0.05em;
+  font: 700 3.2em/1 var(--f-display);
+  color: var(--accent);
+  opacity: 0.85;
+}
+.prose blockquote > * + * {
+  margin-top: 0.8em;
+}
+.prose hr {
+  margin: 3em auto;
+  width: 60px;
+  border: 0;
+  height: 1px;
+  background: var(--line-2);
+}
+.prose :not(pre) > code {
+  padding: 0.12em 0.4em;
+  margin-inline: 0.1em;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font: 0.86em var(--f-mono);
+  color: var(--accent-ink);
+  white-space: break-spaces;
+}
+.prose img {
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  margin-inline: auto;
+}
+.prose img.zoomable {
+  cursor: zoom-in;
+}
+.prose :is(figure, p:has(> img)) {
+  margin-block: 2em;
+}
+
+/* ---------- 代码块 ---------- */
+.prose figure.code {
+  margin-block: 1.8em;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--code-bg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.code__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 42px;
+  padding: 0 8px 0 16px;
+  border-bottom: 1px solid var(--line);
+  font: 12px/1 var(--f-mono);
+  color: var(--ink-2);
+}
+.code__dots {
+  display: flex;
+  gap: 6px;
+}
+.code__dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--line-2);
+}
+.code__dots i:first-child {
+  background: var(--accent);
+  opacity: 0.8;
+}
+.code__lang {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+}
+.code__lines {
+  color: var(--ink-3);
+}
+.code__copy {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 99px;
+  font: 12px/1 var(--f-sans);
+  color: var(--ink-2);
+  transition: background 0.2s, color 0.2s;
+}
+.code__copy:hover {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+.code__copy.ok {
+  color: var(--accent);
+}
+.prose pre {
+  margin: 0;
+  padding: 18px 20px;
+  overflow-x: auto;
+  font: 13.5px/1.75 var(--f-mono);
+  letter-spacing: 0;
+  tab-size: 2;
+  background: transparent !important;
+  scrollbar-width: thin;
+}
+.prose pre code {
+  counter-reset: line;
+}
+.prose pre .line {
+  display: inline-block;
+  min-width: 100%;
+}
+.prose pre .line::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 2em;
+  margin-right: 1.2em;
+  text-align: right;
+  color: var(--ink-3);
+  opacity: 0.6;
+}
+.prose pre span {
+  color: var(--shiki-light);
+}
+[data-theme='dark'] .prose pre span {
+  color: var(--shiki-dark);
+}
+
+/* ---------- 表格 ---------- */
+.prose .table-wrap {
+  margin-block: 2em;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  scrollbar-width: thin;
+}
+.prose table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 0.82em;
+  line-height: 1.6;
+}
+.prose th,
+.prose td {
+  padding: 0.75em 1em;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.prose th {
+  position: sticky;
+  top: 0;
+  background: var(--card-2);
+  font-weight: 600;
+  white-space: nowrap;
+  font-size: 0.92em;
+  color: var(--ink);
+}
+.prose tr:last-child td {
+  border-bottom: 0;
+}
+.prose tbody tr {
+  transition: background 0.2s;
+}
+.prose tbody tr:hover {
+  background: var(--accent-soft);
+}
+.prose td:first-child {
+  font-family: var(--f-mono);
+  color: var(--accent-ink);
+  white-space: nowrap;
+}
+
+/* ---------- 脚注 ---------- */
+.prose sup {
+  line-height: 0;
+}
+.prose a[data-footnote-ref] {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5em;
+  height: 1.5em;
+  margin-left: 2px;
+  padding: 0 0.3em;
+  border-radius: 99px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font: 600 0.62em var(--f-mono);
+  text-decoration: none;
+}
+.prose .fn-host {
+  position: relative;
+}
+.fn-tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 1.4em);
+  z-index: 10;
+  width: max-content;
+  max-width: min(320px, 80vw);
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--ink);
+  color: var(--paper);
+  font: 13px/1.6 var(--f-sans);
+  letter-spacing: 0;
+  box-shadow: var(--shadow-lg);
+  transform: translate(-50%, 6px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s, transform 0.35s var(--spring), visibility 0.25s;
+  pointer-events: none;
+}
+.fn-tip p {
+  margin: 0;
+}
+.fn-tip code {
+  color: inherit !important;
+  background: rgb(255 255 255 / 0.12) !important;
+  border: 0 !important;
+}
+.fn-host:hover > .fn-tip,
+.fn-host:focus-within > .fn-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+.prose .footnotes {
+  margin-top: 3.5em;
+  padding-top: 1.5em;
+  border-top: 1px solid var(--line);
+  font-size: 0.86em;
+  color: var(--ink-2);
+}
+.prose .footnotes h2 {
+  margin-top: 0;
+  font-size: 0.95em;
+}
+.prose .footnotes h2::before {
+  display: none;
+}
+.prose .footnotes :target {
+  background: var(--accent-soft);
+  border-radius: 8px;
+}
+.prose .data-footnote-backref {
+  text-decoration: none;
+  color: var(--accent);
+}
+
+/* ---------- 图片放大层 ---------- */
+.zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgb(15 14 12 / 0);
+  backdrop-filter: blur(0);
+  transition: background 0.4s, backdrop-filter 0.4s;
+  cursor: zoom-out;
+}
+.zoom.on {
+  background: rgb(15 14 12 / 0.72);
+  backdrop-filter: blur(8px);
+}
+.zoom__img {
+  position: absolute;
+  max-width: none;
+  border-radius: 14px;
+  transform-origin: 0 0;
+  box-shadow: var(--shadow-lg);
+}

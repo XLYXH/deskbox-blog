@@ -1,0 +1,40 @@
+---
+interface Props { eyebrow: string; title: string; lead?: string; count?: number; countLabel?: string }
+const { eyebrow, title, lead, count, countLabel = '篇' } = Astro.props;
+---
+<header class="ph wrap">
+  <p class="eyebrow rise">{eyebrow}</p>
+  <h1 class="ph__title display rise" style="--i:1">
+    <span data-decode="120">{title}</span>
+    {count !== undefined && <sup class="ph__count mono"><span data-filter-count>{count}</span> {countLabel}</sup>}
+  </h1>
+  {lead && <p class="ph__lead rise" style="--i:2">{lead}</p>}
+  <slot />
+</header>
+<style>
+  .ph {
+    padding-top: clamp(16px, 4vw, 48px);
+    margin-bottom: clamp(32px, 5vw, 56px);
+  }
+  .ph__title {
+    margin-top: 18px;
+    font-size: clamp(48px, 9vw, 120px);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .ph__count {
+    margin-left: 0.3em;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    vertical-align: super;
+    color: var(--accent);
+  }
+  .ph__lead {
+    max-width: 36em;
+    margin-top: 22px;
+    font-size: clamp(16px, 1.3vw, 18px);
+    line-height: 1.85;
+    color: var(--ink-2);
+  }
+</style>

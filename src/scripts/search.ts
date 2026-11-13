@@ -1,0 +1,110 @@
+import { $, $$ } from './util';
+
+type Item = { t: string; d: string; u: string; date: string; tags?: string[] };
+let pagefind: any = null;
+let loading: Promise<any> | null = null;
+
+async function loadPagefind() {
+  if (pagefind) return pagefind;
+  if (!loading) {
+    const base = document.documentElement.dataset.base || '';
+    const src = `${base}/pagefind/pagefind.js`;
+    loading = import(/* @vite-ignore */ src)
+      .then(async (m) => { await m.options?.({ excerptLength: 26 }); m.init?.(); pagefind = m; return m; })
+      .catch(() => null);
+  }
+  return loading;
+}
+
+const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+function hl(s: string, q: string) {
+  if (!q) return esc(s);
+  const i = s.toLowerCase().indexOf(q.toLowerCase());
+  if (i < 0) return esc(s);
+  return esc(s.slice(0, i)) + '<mark>' + esc(s.slice(i, i + q.length)) + '</mark>' + esc(s.slice(i + q.length));
+}
+
+let bound = false;
+export function initSearch() {
+  const dlg = $<HTMLDialogElement>('[data-search]');
+  if (!dlg) return;
+  const input = $<HTMLInputElement>('[data-search-input]', dlg)!;
+  const list = $('[data-search-list]', dlg)!;
+  const status = $('[data-search-status]', dlg)!;
+  const tagsBox = $('[data-search-tags]', dlg)!;
+  const index: Item[] = JSON.parse($('[data-search-index]', dlg)?.textContent || '[]');
+  let sel = 0;
+  let seq = 0;
+
+  const render = (items: { t: string; d: string; u: string; date?: string }[], q: string, raw = false) => {
+    sel = 0;
+    list.innerHTML = items
+      .map((r, i) => `<li><a href="${r.u}" role="option" aria-selected="${i === 0}"><span class="r-t">${raw ? r.t : hl(r.t, q)}</span><span class="r-date">${r.date ?? ''}</span><span class="r-d">${raw ? r.d : hl(r.d, q)}</span></a></li>`)
+      .join('');
+  };
+  const empty = () => {
+    status.textContent = '最近文章';
+    tagsBox.hidden = false;
+    render(index.slice(0, 5), '');
+  };
+  const run = async () => {
+    const q = input.value.trim();
+    const my = ++seq;
+    if (!q) return empty();
+    tagsBox.hidden = true;
+    const pf = await loadPagefind();
+    if (my !== seq) return;
+    if (pf) {
+      const res = await pf.debouncedSearch(q, {}, 120);
+      if (my !== seq || !res) return;
+      const data = await Promise.all(res.results.slice(0, 8).map((r: any) => r.data()));
+      if (my !== seq) return;
+      status.textContent = data.length ? `${res.results.length} 篇相关` : '没有找到，换个词试试';
+      render(data.map((d: any) => ({ t: d.meta?.title || '', d: d.excerpt, u: d.url, date: d.meta?.date })), q, true);
+    } else {
+      // 开发环境没有 Pagefind 索引时，退回标题/摘要匹配
+      const lq = q.toLowerCase();
+      const r = index.filter((x) => (x.t + x.d + (x.tags || []).join(' ')).toLowerCase().includes(lq));
+      status.textContent = r.length ? `${r.length} 篇相关` : '没有找到，换个词试试';
+      render(r, q);
+    }
+  };
+  input.oninput = run;
+  input.onkeydown = (e) => {
+    const items = $$<HTMLAnchorElement>('a', list);
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!items.length) return;
+      items[sel]?.setAttribute('aria-selected', 'false');
+      sel = (sel + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+      items[sel].setAttribute('aria-selected', 'true');
+      items[sel].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      const a = items[sel];
+      if (a) { e.preventDefault(); dlg.close(); a.click(); }
+    }
+  };
+  dlg.onclick = (e) => {
+    if (e.target === dlg) dlg.close();
+    if ((e.target as Element).closest('a')) dlg.close();
+  };
+  const open = () => {
+    if (dlg.open) return;
+    dlg.showModal();
+    empty();
+    input.value = '';
+    input.focus();
+    loadPagefind();
+  };
+  $$('[data-search-open]').forEach((b) => (b.onclick = open));
+  if (!bound) {
+    bound = true;
+    addEventListener('keydown', (e) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && !/INPUT|TEXTAREA/.test(tag))) {
+        e.preventDefault();
+        $$('[data-search-open]')[0]?.click();
+      }
+    });
+  }
+}

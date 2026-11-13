@@ -1,0 +1,17 @@
+---
+// DeskBox 标志：一只打开的盒子 + 一道台灯光
+interface Props { size?: number }
+const { size = 28 } = Astro.props;
+---
+<svg class="mark" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+  <defs>
+    <linearGradient id="mk-beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="rgb(var(--glow))" stop-opacity=".95" />
+      <stop offset="1" stop-color="rgb(var(--glow))" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <path class="mark__beam" d="M13 4h6l6 13H7z" fill="url(#mk-beam)" />
+  <rect x="5" y="16" width="22" height="12" rx="3" fill="var(--ink)" />
+  <path d="M5 19.5h22" stroke="var(--paper)" stroke-width="1.4" opacity=".55" />
+  <rect x="13" y="2.5" width="6" height="3" rx="1.5" fill="var(--ink)" />
+</svg>
