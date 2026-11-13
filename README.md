@@ -34,6 +34,7 @@ v1 用了液态玻璃、跟随鼠标的台灯光晕、渐变卡片和统计小�
 | 归档 | 写作日历用墨色方块（像盖章，略微歪斜）；时间线的节点是勾选框，滚动经过时打勾 |
 | 关于 | 借书卡：统计数字像盖上去的蓝色 / 红色日期章 |
 | 404 | 404 中间的 0 是一圈咖啡渍 |
+| 图片 | 裱在一张纸上，下方「图 N」说明；同段多图自动并排或成网格；模糊占位；灯箱支持 ← → / Esc / 手机滑动，在整篇文章的图片间切换 |
 | 页面切换 | 顶部红色加载条 + Astro 视图过渡（文章标题从列表飞到文章页）|
 
 ### 参考与致谢
@@ -68,8 +69,80 @@ series: { name: 工程实践札记, order: 3 }  # 可选，专栏
 
 - 草稿和未来日期的文章会在构建时排除（不进入列表、RSS、搜索与站点地图）。
 - 新标签先在 `src/config.ts` 的 `tags` 里加一项（名称、slug、描述）。
-- 支持 GFM 表格、脚注、代码高亮（Shiki 双主题），`##` / `###` 自动进入目录。
+- 支持 GFM 表格、脚注、代码高亮（Shiki 双主题）和图片（见下方「图片」一节），`##` / `###` 自动进入目录。
 - 作者信息、社交链接、评论配置都在 `src/config.ts`。原站的邮箱和一句话简介是占位符，已暂时隐藏，填上真实内容即可。
+
+## 图片
+
+文章里的图片都会在构建期处理：裁成多种宽度（`srcset` + `sizes`）、转成 avif / webp、写上宽高（加载时不跳动）、懒加载，并生成一张模糊占位图。点击任意图片会打开灯箱，可以用 ← → 在这篇文章的所有图片之间切换，`Esc` 或点空白处关闭，手机上左右滑动切换。
+
+### 在 Markdown（`.md`）里
+
+图片放在文章目录里，用相对路径引用：
+
+```md
+![替代文字，给读屏软件和图片加载失败时看](./photo.jpg)
+
+![替代文字](./photo.jpg "这一行会显示成图片下方的说明：图 1 …")
+```
+
+- 引号里的 title 会变成图片说明（`<figcaption>`，前面自动编号「图 1」「图 2」）；不写就没有说明。替代文字（alt）必须写，描述图片里有什么。
+- **并排 / 多图**：把几张图写在同一段里（中间不空行），两张会左右并排，三张及以上排成网格（手机上两列）：
+
+  ```md
+  ![左图](./a.jpg "左边的说明") ![右图](./b.jpg "右边的说明")
+  ```
+
+- **站外图片**：直接写完整地址。建议在地址末尾加 `#宽x高`，这样浏览器能提前留出位置，不会跳动；站外图片不会被压缩转码，只会懒加载并且不发送 referrer：
+
+  ```md
+  ![一张站外图片](https://example.com/photo.jpg#1600x900 "图片来源：example.com")
+  ```
+
+### 在 MDX（`.mdx`）里
+
+上面的 Markdown 写法同样可用。需要更多控制时用组件：
+
+```mdx
+import Figure from '../../../../../components/Figure.astro';
+import Gallery from '../../../../../components/Gallery.astro';
+import photo from './photo.jpg';
+import a from './a.jpg';
+import b from './b.jpg';
+import lineArt from './line-art.png';
+
+<Figure src={photo} alt="替代文字" caption="图片说明" credit="摄影：某某" />
+
+<Figure src={photo} alt="…" caption="比正文栏更宽，向左伸进日期栏" wide />
+
+<Figure src={lineArt} alt="…" invert />   {/* 白底线稿：深色模式下自动反色 */}
+
+<Figure src="https://example.com/x.jpg" width={1600} height={900} alt="…" caption="站外图片要写宽高" />
+
+<Gallery cols={2}>               {/* 2 = 左右并排；3、4 = 网格 */}
+  <Figure src={a} alt="…" caption="左" />
+  <Figure src={b} alt="…" caption="右" />
+</Gallery>
+
+<Gallery cols={3} ratio="4/3" caption="整组的说明">   {/* ratio：统一裁成同一比例，点开仍是完整原图 */}
+  …
+</Gallery>
+```
+
+`Figure` 的可选参数：`caption`、`credit`、`wide`、`invert`、`placeholder="none"`（关闭模糊占位）、`loading="eager"`（首屏大图）、`sizes`。
+
+### 封面
+
+在 frontmatter 里写 `cover: ./cover.png` 和 `coverAlt: 封面说明`（两者必须同时写）。有封面时：
+
+- 文章页顶部显示封面（avif / webp，首屏优先加载，可点击放大）；
+- 首页头条与文章列表会显示封面（列表里是日期下方的一张小照片），悬停预览卡也会带上封面；
+- 分享图（`/og/<slug>.png`）会把封面贴在标题右侧；没有封面时是纯文字卡片。
+
+### 建议
+
+- 原图用 PNG（截图、线稿）或 JPG（照片）即可，宽度 1600–2400px 足够，构建时会自动生成小尺寸版本。
+- 深色模式下所有正文图片会略微压暗（点开大图时恢复原亮度）；白底黑线的示意图可以用 `invert` 反色。
 
 ## 本地开发
 
