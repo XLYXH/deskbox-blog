@@ -1,0 +1,54 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import PostRow from '../../components/PostRow.astro';
+import Preview from '../../components/Preview.astro';
+import Icon from '../../components/Icon.astro';
+import { getPosts } from '../../lib/posts';
+import { cardData } from '../../lib/meta';
+import { tags } from '../../config';
+import { url, tagUrl } from '../../lib/url';
+export async function getStaticPaths() {
+  return tags.map((t) => ({ params: { tag: t.slug }, props: { t } }));
+}
+const { t } = Astro.props;
+const posts = (await getPosts()).filter((p) => (p.data.tags as string[]).includes(t.name));
+const cards = await Promise.all(posts.map(cardData));
+---
+<Base title={`#${t.name}`} description={`${t.name}：${t.description}。DeskBox 中带有该标签的文章。`}>
+  <PageHead eyebrow={`Tag · /${t.slug}`} title={`#${t.name}`} count={cards.length} lead={t.description}>
+    <nav class="others rise" style="--i:3" aria-label="其他标签">
+      <a class="chip" href={url('/tags/')}>全部标签</a>
+      {tags.filter((x) => x.slug !== t.slug).map((x) => <a class="chip" href={tagUrl(x.slug)}>{x.name}</a>)}
+    </nav>
+  </PageHead>
+  <div class="wrap">
+    {cards.length ? <ol class="rows">{cards.map((p, i) => <PostRow p={p} index={i} />)}</ol>
+      : <p class="empty muted">这个标签下还没有文章。<a href={url('/blog/')}>看看全部文章 <Icon name="right" size={14} /></a></p>}
+  </div>
+  <Preview />
+</Base>
+<style>
+  .others {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 24px;
+  }
+  .others .chip:first-child::before {
+    content: '←';
+  }
+  .rows {
+    padding: 0;
+  }
+  .empty {
+    padding: 60px 0;
+    text-align: center;
+  }
+  .empty a {
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+</style>

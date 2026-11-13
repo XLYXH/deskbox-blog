@@ -1,0 +1,75 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import PostRow from '../../components/PostRow.astro';
+import Preview from '../../components/Preview.astro';
+import { getPosts } from '../../lib/posts';
+import { cardData } from '../../lib/meta';
+import { tags } from '../../config';
+const posts = await getPosts();
+const cards = await Promise.all(posts.map(cardData));
+const used = tags.filter((t) => cards.some((c) => c.tags.includes(t.name)));
+---
+<Base title="文章" description="DeskBox 的全部文章：前端、后端、工程实践、阅读与生活。">
+  <PageHead eyebrow="Writing · 全部文章" title="文章" count={cards.length} lead="按时间倒序排列。点上面的标签筛选，悬停可以预览。" />
+  <div class="wrap">
+    <div class="filter rise" style="--i:3" data-filter role="group" aria-label="按标签筛选">
+      <span class="filter__ind" data-filter-ind aria-hidden="true"></span>
+      <button type="button" data-tag="all" aria-pressed="true">全部</button>
+      {used.map((t) => <button type="button" data-tag={t.slug} aria-pressed="false">{t.name}</button>)}
+    </div>
+    <ol class="rows">
+      {cards.map((p, i) => <PostRow p={p} index={i} />)}
+    </ol>
+    <p class="empty muted" data-filter-empty hidden>这个标签下还没有文章。</p>
+  </div>
+  <Preview />
+</Base>
+<style>
+  .filter {
+    position: relative;
+    display: flex;
+    gap: 4px;
+    width: fit-content;
+    max-width: 100%;
+    padding: 5px;
+    margin-bottom: 28px;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--card) 70%, transparent);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .filter button {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    height: 38px;
+    padding: 0 18px;
+    border-radius: 99px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink-2);
+    transition: color 0.3s;
+  }
+  .filter button[aria-pressed='true'] {
+    color: var(--paper);
+  }
+  .filter__ind {
+    position: absolute;
+    top: 5px;
+    left: 0;
+    height: 38px;
+    border-radius: 99px;
+    background: var(--ink);
+    box-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.4);
+    transition: transform 0.55s var(--spring), width 0.55s var(--spring);
+  }
+  .rows {
+    padding: 0;
+  }
+  .empty {
+    padding: 60px 0;
+    text-align: center;
+  }
+</style>

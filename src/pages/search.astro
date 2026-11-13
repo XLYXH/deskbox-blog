@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import Icon from '../components/Icon.astro';
+import { getPosts, fmtDate } from '../lib/posts';
+import { postUrl } from '../lib/url';
+const posts = await getPosts();
+---
+<Base title="搜索" description="在 DeskBox 中搜索文章。" noindex>
+  <PageHead eyebrow="Search · 搜索" title="搜索" lead="在任意页面按 ⌘K（Windows 上是 Ctrl K）或 / 也能打开搜索。" />
+  <div class="wrap s">
+    <button class="s__box" type="button" data-search-open>
+      <Icon name="search" size={20} /><span>搜索文章、标签或关键词…</span><kbd>⌘K</kbd>
+    </button>
+    <noscript>
+      <ul class="s__list">{posts.map((p) => <li><a href={postUrl(p.data.slug)}>{p.data.title}</a> <span class="mono">{fmtDate(p.data.pubDate)}</span></li>)}</ul>
+    </noscript>
+  </div>
+  <script>
+    document.addEventListener('astro:page-load', () => {
+      if (location.pathname.endsWith('/search/')) setTimeout(() => document.querySelector<HTMLElement>('.s__box')?.click(), 350);
+    });
+  </script>
+</Base>
+<style>
+  .s__box {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: min(100%, 640px);
+    height: 64px;
+    padding: 0 20px;
+    border-radius: 20px;
+    border: 1px solid var(--line-2);
+    background: var(--card);
+    color: var(--ink-2);
+    font-size: 17px;
+    box-shadow: var(--shadow);
+  }
+  .s__box kbd {
+    margin-left: auto;
+    font: 500 11px/1 var(--f-mono);
+    padding: 4px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--line-2);
+  }
+  .s__list {
+    margin-top: 24px;
+  }
+</style>

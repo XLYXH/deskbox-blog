@@ -1,0 +1,202 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Mark from '../components/Mark.astro';
+import { site } from '../config';
+import { url } from '../lib/url';
+import { getStats, fmtDate } from '../lib/posts';
+const s = await getStats();
+---
+<Base title="关于" description={`关于 ${site.name}：${site.description}`}>
+  <section class="about wrap">
+    <div class="about__intro">
+      <p class="eyebrow rise">About · 关于</p>
+      <h1 class="about__title display rise" style="--i:1">
+        <span>你好，</span><span>这里是 <em>{site.name}</em>。</span>
+      </h1>
+    </div>
+    <div class="about__grid">
+      <div class="about__text rise" style="--i:2">
+        <p class="about__big">这里记录技术、阅读与生活。</p>
+        <p>原型阶段使用示例内容，正式文章会陆续替换。</p>
+        <h2 class="display">联系</h2>
+        <ul class="links">
+          {site.social.map((l) => (
+            <li><a href={url(l.href)} data-magnetic="0.2"><Icon name={l.icon} size={18} /><span>{l.label}</span><Icon name="arrow" size={14} class="go" /></a></li>
+          ))}
+        </ul>
+      </div>
+      <aside class="about__card card spot rise" style="--i:3" data-tilt="5">
+        <div class="about__mark"><Mark size={64} /></div>
+        <p class="about__name display">{site.name}</p>
+        <p class="muted">{site.description}</p>
+        <dl>
+          <div><dt>文章</dt><dd class="num" data-count={s.posts}>{s.posts}</dd></div>
+          <div><dt>字数</dt><dd class="num" data-count={s.words}>{s.words}</dd></div>
+          <div><dt>第一篇</dt><dd class="mono">{s.first ? fmtDate(s.first) : '—'}</dd></div>
+          <div><dt>最近更新</dt><dd class="mono">{s.last ? fmtDate(s.last) : '—'}</dd></div>
+        </dl>
+      </aside>
+    </div>
+
+    <section class="colophon rise" aria-labelledby="colo">
+      <h2 id="colo" class="eyebrow">Colophon · 这个站是怎么做的</h2>
+      <ul>
+        <li><b>框架</b><span>Astro 静态生成，文章是仓库里的 Markdown / MDX</span></li>
+        <li><b>字体</b><span>Fraunces、Geist、Noto Serif SC（按页面用字子集化），全部自托管</span></li>
+        <li><b>搜索</b><span>Pagefind 构建期全文索引，按 <kbd>⌘K</kbd> 或 <kbd>/</kbd> 打开</span></li>
+        <li><b>主题</b><span>白天是纸面，夜里是台灯；拉一下右上角的灯绳试试</span></li>
+      </ul>
+    </section>
+  </section>
+</Base>
+<style>
+  .about {
+    padding-top: clamp(16px, 4vw, 48px);
+  }
+  .about__title {
+    margin-top: 18px;
+    font-size: clamp(46px, 8vw, 112px);
+    letter-spacing: -0.04em;
+    line-height: 1.04;
+  }
+  .about__title span {
+    display: block;
+  }
+  .about__title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .about__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+    gap: clamp(32px, 6vw, 96px);
+    margin-top: clamp(40px, 6vw, 72px);
+    align-items: start;
+  }
+  .about__text {
+    font-size: 17.5px;
+    line-height: 1.9;
+    color: var(--ink-2);
+  }
+  .about__big {
+    font: 600 clamp(24px, 2.6vw, 34px) / 1.5 var(--f-display);
+    color: var(--ink);
+    margin-bottom: 14px;
+  }
+  .about__text h2 {
+    margin: 48px 0 16px;
+    font-size: 24px;
+    color: var(--ink);
+  }
+  .links {
+    display: grid;
+    gap: 10px;
+    padding: 0;
+    list-style: none;
+  }
+  .links a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 58px;
+    padding: 0 20px;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--card) 70%, transparent);
+    color: var(--ink);
+    font-size: 16px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .links a:hover {
+    background: var(--card);
+    border-color: var(--line-2);
+  }
+  .links :global(.go) {
+    margin-left: auto;
+    color: var(--ink-3);
+    transition: transform 0.4s var(--ease), color 0.3s;
+  }
+  .links a:hover :global(.go) {
+    transform: translate(3px, -3px);
+    color: var(--accent);
+  }
+  .about__card {
+    padding: 30px;
+    text-align: center;
+    position: sticky;
+    top: calc(var(--nav-h) + 40px);
+    will-change: transform;
+  }
+  .about__mark {
+    display: grid;
+    place-items: center;
+    width: 112px;
+    height: 112px;
+    margin: 0 auto 18px;
+    border-radius: 32px;
+    background: radial-gradient(circle at 50% 30%, rgb(var(--glow) / 0.28), transparent 70%), var(--paper-2);
+    box-shadow: inset 0 1px 0 var(--glass-edge);
+  }
+  .about__name {
+    font-size: 30px;
+  }
+  .about__card dl {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 12px;
+    margin-top: 24px;
+    padding-top: 22px;
+    border-top: 1px dashed var(--line-2);
+    text-align: left;
+  }
+  .about__card dt {
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .about__card dd {
+    margin-top: 4px;
+    font: 600 20px/1.2 var(--f-display);
+  }
+  .about__card dd.mono {
+    font: 500 14px/1.6 var(--f-mono);
+  }
+  .colophon {
+    margin-top: clamp(64px, 9vw, 110px);
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .colophon ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px 32px;
+    margin-top: 22px;
+    padding: 0;
+    list-style: none;
+  }
+  .colophon li {
+    display: grid;
+    gap: 6px;
+    font-size: 14.5px;
+    color: var(--ink-2);
+  }
+  .colophon b {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  kbd {
+    font: 500 11px/1 var(--f-mono);
+    padding: 3px 5px;
+    border-radius: 5px;
+    border: 1px solid var(--line-2);
+  }
+  @media (max-width: 860px) {
+    .about__grid {
+      grid-template-columns: 1fr;
+    }
+    .about__card {
+      position: relative;
+      top: 0;
+    }
+  }
+</style>

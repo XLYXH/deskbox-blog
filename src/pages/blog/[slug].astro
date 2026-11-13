@@ -1,0 +1,621 @@
+---
+import { render } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import { getPosts, fmtDate, wordCount, readingMinutes } from '../../lib/posts';
+import { site, tagSlug } from '../../config';
+import { url, postUrl, tagUrl } from '../../lib/url';
+import '../../styles/prose.css';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post, i) => ({
+    params: { slug: post.data.slug },
+    props: { post, newer: posts[i - 1], older: posts[i + 1], all: posts },
+  }));
+}
+const { post, newer, older, all } = Astro.props;
+const { Content, headings } = await render(post);
+const d = post.data;
+const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 3 && h.slug !== 'footnote-label').map((h) => ({ ...h, text: h.text.replace(/\s*#$/, '') }));
+const words = wordCount(post.body ?? '');
+const minutes = readingMinutes(post.body ?? '');
+const series = d.series ? all.filter((p) => p.data.series?.name === d.series!.name).sort((a, b) => a.data.series!.order - b.data.series!.order) : [];
+const primary = (d.tags as string[])[0];
+const canonical = d.canonical;
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: d.title,
+  description: d.description,
+  datePublished: d.pubDate.toISOString(),
+  dateModified: (d.updatedDate ?? d.pubDate).toISOString(),
+  author: { '@type': 'Person', name: site.author.name },
+  inLanguage: d.lang,
+  keywords: (d.tags as string[]).join(','),
+  mainEntityOfPage: new URL(postUrl(d.slug), Astro.site).href,
+  image: new URL(url(`/og/${d.slug}.png`), Astro.site).href,
+};
+---
+<Base title={d.title} description={d.description} type="article" image={`/og/${d.slug}.png`} published={d.pubDate} modified={d.updatedDate} tags={d.tags} canonical={canonical} lamp={false} jsonld={jsonld}>
+  <article class="post" lang={d.lang} data-pagefind-body>
+    <header class="post__head wrap">
+      <nav data-pagefind-ignore class="crumb mono rise" aria-label="面包屑">
+        <a href={url('/blog/')}>文章</a>
+        {primary && <><span aria-hidden="true">/</span><a href={tagUrl(tagSlug(primary))}>{primary}</a></>}
+        {d.series && <><span aria-hidden="true">/</span><span>{d.series.name} · {d.series.order}</span></>}
+      </nav>
+      <h1 data-pagefind-meta="title" class="post__title display" style={`view-transition-name: t-${d.slug}`}>{d.title}</h1>
+      <p class="post__lead rise" style="--i:1">{d.description}</p>
+      <div class="post__meta rise" style="--i:2">
+        <span><Icon name="calendar" size={15} /><time datetime={d.pubDate.toISOString()} data-pagefind-meta="date">{fmtDate(d.pubDate)}</time></span>
+        {d.updatedDate && <span><Icon name="layers" size={15} />更新于 <time datetime={d.updatedDate.toISOString()}>{fmtDate(d.updatedDate)}</time></span>}
+        <span><Icon name="file" size={15} />{words.toLocaleString('zh-CN')} 字</span>
+        <span><Icon name="clock" size={15} />约 {minutes} 分钟</span>
+        {(d.tags as string[]).length > 0 && (
+          <span class="post__tags">{(d.tags as string[]).map((t) => <a class="chip" href={tagUrl(tagSlug(t))}>{t}</a>)}</span>
+        )}
+      </div>
+    </header>
+
+    {d.cover && (
+      <figure class="post__cover wrap rise" style="--i:3">
+        <div class="post__cover-in" data-tilt="3">
+          <Image src={d.cover} alt={d.coverAlt ?? ''} widths={[720, 1080, 1440]} sizes="(min-width: 1100px) 1040px, 100vw" loading="eager" fetchpriority="high" />
+        </div>
+      </figure>
+    )}
+
+    <div class="post__grid wrap">
+      <div class="post__body">
+        <div class="prose" data-article>
+          <Content />
+        </div>
+        <p data-pagefind-ignore class="post__end mono" aria-hidden="true"><span></span>全文完<span></span></p>
+
+        {series.length > 1 && (
+          <aside data-pagefind-ignore class="series card" aria-label="专栏">
+            <p class="eyebrow">专栏 · {d.series!.name}</p>
+            <ol>
+              {series.map((p) => (
+                <li>
+                  {p.data.slug === d.slug
+                    ? <span class="series__cur" aria-current="page"><b class="mono">{String(p.data.series!.order).padStart(2, '0')}</b>{p.data.title}<em>正在读</em></span>
+                    : <a href={postUrl(p.data.slug)}><b class="mono">{String(p.data.series!.order).padStart(2, '0')}</b>{p.data.title}</a>}
+                </li>
+              ))}
+            </ol>
+          </aside>
+        )}
+
+        <nav data-pagefind-ignore class="pn" aria-label="上一篇与下一篇">
+          {older ? (
+            <a class="pn__a card spot" href={postUrl(older.data.slug)} rel="prev">
+              <span class="pn__k mono"><Icon name="left" size={14} /> 上一篇</span>
+              <span class="pn__t">{older.data.title}</span>
+            </a>
+          ) : <span />}
+          {newer ? (
+            <a class="pn__a pn__a--next card spot" href={postUrl(newer.data.slug)} rel="next">
+              <span class="pn__k mono">下一篇 <Icon name="right" size={14} /></span>
+              <span class="pn__t">{newer.data.title}</span>
+            </a>
+          ) : <span />}
+        </nav>
+
+        <section data-pagefind-ignore class="cmt card" aria-label="评论">
+          <div class="cmt__head">
+            <div>
+              <p class="cmt__t">评论</p>
+              <p class="cmt__d muted">评论由 GitHub Discussions（Giscus）提供，点击后才会加载第三方内容。<a href={url('/privacy/')}>隐私说明</a></p>
+            </div>
+            <button class="btn btn--ghost" type="button" data-comments-load><Icon name="chat" size={16} /> 加载评论</button>
+          </div>
+          <div data-comments data-config={JSON.stringify(site.comments)}></div>
+        </section>
+      </div>
+
+      {toc.length > 0 && (
+        <aside class="post__aside" aria-label="目录">
+          <nav class="toc" data-toc>
+            <p class="toc__h mono">目录 · CONTENTS</p>
+            <span class="toc__ind" data-toc-ind aria-hidden="true"></span>
+            <ol>
+              {toc.map((h) => (
+                <li class={`d${h.depth}`}><a href={`#${h.slug}`} data-id={h.slug}>{h.text}</a></li>
+              ))}
+            </ol>
+            <div class="toc__prog mono" aria-hidden="true"><span class="toc__bar"><i></i></span></div>
+          </nav>
+        </aside>
+      )}
+    </div>
+  </article>
+
+  <!-- 浮动阅读工具 -->
+  <div class="dock glass" data-dock>
+    <button type="button" class="dock__ring" data-top aria-label="回到顶部">
+      <svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.9" pathLength="100" class="trk" /><circle cx="18" cy="18" r="15.9" pathLength="100" class="bar" data-ring /></svg>
+      <span class="dock__pct mono" data-pct>0</span>
+      <span class="dock__up"><Icon name="up" size={15} /></span>
+    </button>
+    {toc.length > 0 && <button type="button" class="dock__btn dock__toc" data-sheet-toggle="toc" aria-expanded="false" aria-label="目录"><Icon name="list" size={17} /></button>}
+    <button type="button" class="dock__btn" data-sheet-toggle="reader" aria-expanded="false" aria-label="阅读设置"><Icon name="type" size={17} /></button>
+  </div>
+  <div class="sheet" data-sheet data-view="reader">
+    {toc.length > 0 && (
+      <nav class="sheet__toc" data-toc aria-label="目录">
+        <p class="toc__h mono">目录</p>
+        <span class="toc__ind" data-toc-ind aria-hidden="true"></span>
+        <ol>{toc.map((h) => <li class={`d${h.depth}`}><a href={`#${h.slug}`} data-id={h.slug}>{h.text}</a></li>)}</ol>
+      </nav>
+    )}
+    <div class="sheet__reader" data-reader>
+      <p class="toc__h mono">阅读设置</p>
+      <div class="seg" role="group" aria-label="字号">
+        <button type="button" data-size="s">小</button>
+        <button type="button" data-size="m">中</button>
+        <button type="button" data-size="l">大</button>
+      </div>
+      <div class="seg" role="group" aria-label="正文字体">
+        <button type="button" data-font="sans">黑体</button>
+        <button type="button" data-font="serif">宋体</button>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .post__head {
+    max-width: 920px;
+    padding-top: clamp(16px, 4vw, 48px);
+    text-align: center;
+  }
+  .crumb {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+  .crumb a:hover {
+    color: var(--accent);
+  }
+  .post__title {
+    margin: 22px auto 0;
+    max-width: 18em;
+    font-size: clamp(34px, 5.4vw, 66px);
+    line-height: 1.16;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+  .post__lead {
+    margin: 22px auto 0;
+    max-width: 36em;
+    font-size: clamp(16px, 1.4vw, 19px);
+    line-height: 1.85;
+    color: var(--ink-2);
+    text-wrap: balance;
+  }
+  .post__meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px 20px;
+    margin-top: 28px;
+    font-size: 13.5px;
+    color: var(--ink-2);
+  }
+  .post__meta > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .post__tags {
+    gap: 6px !important;
+  }
+  .post__cover {
+    max-width: 1100px;
+    margin-top: clamp(32px, 5vw, 60px);
+  }
+  .post__cover-in {
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-lg);
+    will-change: transform;
+  }
+  .post__cover-in :global(img) {
+    width: 100%;
+  }
+
+  .post__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 700px) minmax(0, 1fr);
+    gap: 48px;
+    margin-top: clamp(40px, 6vw, 80px);
+  }
+  .post__body {
+    grid-column: 2;
+    min-width: 0;
+  }
+  .post__aside {
+    grid-column: 3;
+    min-width: 0;
+  }
+  .toc {
+    position: sticky;
+    top: calc(var(--nav-h) + 40px);
+    max-width: 260px;
+  }
+  .toc__h {
+    margin-bottom: 14px;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    color: var(--ink-3);
+  }
+  .toc ol,
+  .sheet__toc ol {
+    position: relative;
+    padding: 0;
+    list-style: none;
+    border-left: 1px solid var(--line);
+  }
+  .toc li a,
+  .sheet__toc li a {
+    display: block;
+    padding: 7px 0 7px 16px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    transition: color 0.25s, transform 0.4s var(--ease);
+  }
+  .toc li.d3 a,
+  .sheet__toc li.d3 a {
+    padding-left: 30px;
+    font-size: 13px;
+  }
+  .toc li a:hover {
+    color: var(--ink);
+  }
+  .toc li a.on,
+  .sheet__toc li a.on {
+    color: var(--ink);
+    font-weight: 600;
+    transform: translateX(3px);
+  }
+  .toc,
+  .sheet__toc {
+    position: relative;
+  }
+  .toc__ind {
+    position: absolute;
+    left: -1px;
+    top: 0;
+    width: 2px;
+    height: 0;
+    margin-top: 24px;
+    border-radius: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 12px rgb(var(--glow) / 0.8);
+    opacity: 0;
+    transition: transform 0.5s var(--spring), height 0.5s var(--spring), opacity 0.3s;
+  }
+  .sheet__toc .toc__ind {
+    margin-top: 28px;
+  }
+  .toc__prog {
+    margin-top: 18px;
+  }
+  .toc__bar {
+    display: block;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .toc__bar i {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: left;
+    transform: scaleX(var(--read, 0));
+  }
+
+  .post__end {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 56px 0 0;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    color: var(--ink-3);
+  }
+  .post__end span {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .post__end span:first-child {
+    background: linear-gradient(90deg, transparent, var(--line-2));
+  }
+  .post__end span:last-child {
+    background: linear-gradient(-90deg, transparent, var(--line-2));
+  }
+
+  .series {
+    margin-top: 40px;
+    padding: 24px 26px;
+  }
+  .series ol {
+    margin-top: 14px;
+    padding: 0;
+    list-style: none;
+  }
+  .series li a,
+  .series__cur {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px dashed var(--line-2);
+    font-weight: 500;
+  }
+  .series li a:hover {
+    color: var(--accent);
+  }
+  .series b {
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--accent);
+  }
+  .series__cur em {
+    margin-left: auto;
+    font: normal 11px var(--f-mono);
+    padding: 3px 8px;
+    border-radius: 99px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .pn {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 40px;
+  }
+  .pn__a {
+    display: grid;
+    gap: 10px;
+    padding: 20px 22px;
+    transition: transform 0.5s var(--ease);
+  }
+  .pn__a:hover {
+    transform: translateY(-3px);
+  }
+  .pn__a--next {
+    text-align: right;
+  }
+  .pn__k {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--ink-3);
+  }
+  .pn__a--next .pn__k {
+    justify-content: flex-end;
+  }
+  .pn__t {
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .cmt {
+    margin-top: 40px;
+    padding: 22px 24px;
+  }
+  .cmt__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+  .cmt__t {
+    font-weight: 600;
+  }
+  .cmt__d {
+    margin-top: 4px;
+    font-size: 13px;
+  }
+  .cmt__d a {
+    color: var(--accent);
+  }
+  [data-comments]:not(:empty) {
+    margin-top: 20px;
+  }
+
+  /* ---------- 浮动工具 ---------- */
+  .dock {
+    position: fixed;
+    right: max(18px, env(safe-area-inset-right));
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    z-index: 45;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 52px;
+    height: auto;
+    padding: 5px;
+    border-radius: 30px;
+    transform: translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.6s var(--spring), opacity 0.4s;
+  }
+  .dock.show {
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .dock button {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: var(--ink-2);
+    transition: background 0.25s, color 0.25s;
+  }
+  .dock button:hover,
+  .dock button[aria-expanded='true'] {
+    background: color-mix(in srgb, var(--card) 80%, transparent);
+    color: var(--ink);
+  }
+  .dock__ring svg {
+    position: absolute;
+    inset: 3px;
+    transform: rotate(-90deg);
+  }
+  .dock__ring circle {
+    fill: none;
+    stroke-width: 2.4;
+  }
+  .trk {
+    stroke: var(--line);
+  }
+  .bar {
+    stroke: var(--accent);
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.15s linear;
+  }
+  .dock__pct {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    transition: opacity 0.2s, transform 0.3s var(--spring);
+  }
+  .dock__up {
+    position: absolute;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s, transform 0.3s var(--spring);
+  }
+  .dock__ring:hover .dock__pct {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  .dock__ring:hover .dock__up {
+    opacity: 1;
+    transform: none;
+  }
+  .sheet {
+    position: fixed;
+    right: max(84px, calc(env(safe-area-inset-right) + 84px));
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    z-index: 46;
+    width: min(300px, calc(100vw - 110px));
+    max-height: min(70vh, 520px);
+    overflow: auto;
+    padding: 18px 18px 14px;
+    border-radius: 22px;
+    background: color-mix(in srgb, var(--card) 84%, transparent);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    box-shadow: inset 0 1px 0 var(--glass-edge), 0 0 0 1px var(--line), var(--shadow-lg);
+    transform-origin: right bottom;
+    transform: scale(0.9) translateY(10px);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.45s var(--spring), opacity 0.25s, visibility 0.25s;
+  }
+  .sheet.open {
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+  }
+  .sheet[data-view='reader'] .sheet__toc,
+  .sheet[data-view='toc'] .sheet__reader {
+    display: none;
+  }
+  .seg {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 4px;
+    padding: 4px;
+    margin-bottom: 10px;
+    border-radius: 14px;
+    background: var(--paper-2);
+  }
+  .seg button {
+    height: 36px;
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--ink-2);
+    transition: background 0.25s, color 0.25s, box-shadow 0.25s;
+  }
+  .seg button[aria-pressed='true'] {
+    background: var(--card);
+    color: var(--ink);
+    box-shadow: var(--shadow);
+  }
+  .seg button[data-font='serif'] {
+    font-family: var(--f-serif-body);
+  }
+
+  @media (min-width: 1181px) {
+    .dock__toc {
+      display: none !important;
+    }
+  }
+  @media (max-width: 1180px) {
+    .post__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .post__body {
+      grid-column: 1;
+      max-width: 700px;
+      width: 100%;
+      margin-inline: auto;
+    }
+    .post__aside {
+      display: none;
+    }
+  }
+  @media (max-width: 760px) {
+    .post__head {
+      text-align: left;
+    }
+    .crumb,
+    .post__meta {
+      justify-content: flex-start;
+    }
+    .post__meta {
+      gap: 8px 14px;
+      font-size: 13px;
+    }
+    .post__title {
+      font-size: clamp(30px, 8.6vw, 42px);
+    }
+    .dock {
+      bottom: calc(84px + env(safe-area-inset-bottom));
+      right: 12px;
+    }
+    .sheet {
+      right: 74px;
+      bottom: calc(84px + env(safe-area-inset-bottom));
+    }
+    .pn {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

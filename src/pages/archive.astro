@@ -1,0 +1,317 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+import { getPosts, dayKey, fmtShort, year, wordCount } from '../lib/posts';
+import { postUrl } from '../lib/url';
+const posts = await getPosts();
+// 按年 → 月分组
+const years = new Map<string, Map<string, typeof posts>>();
+for (const p of posts) {
+  const y = year(p.data.pubDate);
+  const m = dayKey(p.data.pubDate).slice(5, 7);
+  if (!years.has(y)) years.set(y, new Map());
+  const ym = years.get(y)!;
+  ym.set(m, [...(ym.get(m) ?? []), p]);
+}
+// 写作日历：最近 53 周
+const byDay = new Map<string, typeof posts>();
+posts.forEach((p) => byDay.set(dayKey(p.data.pubDate), [...(byDay.get(dayKey(p.data.pubDate)) ?? []), p]));
+const today = new Date(dayKey(new Date()) + 'T00:00:00Z');
+const end = new Date(today);
+end.setUTCDate(end.getUTCDate() + (6 - end.getUTCDay()));
+const start = new Date(end);
+start.setUTCDate(start.getUTCDate() - 53 * 7 + 1);
+const weeks: { key: string; n: number; future: boolean; titles: string[]; slug?: string }[][] = [];
+const months: { label: string; col: number }[] = [];
+for (let d = new Date(start), i = 0; d <= end; d.setUTCDate(d.getUTCDate() + 1), i++) {
+  const key = d.toISOString().slice(0, 10);
+  const col = Math.floor(i / 7);
+  (weeks[col] ??= []).push({ key, n: byDay.get(key)?.length ?? 0, future: d > today, titles: (byDay.get(key) ?? []).map((p) => p.data.title), slug: byDay.get(key)?.[0]?.data.slug });
+  if (d.getUTCDate() === 1) months.push({ label: `${d.getUTCMonth() + 1}月`, col });
+}
+const totalWords = posts.reduce((s, p) => s + wordCount(p.body ?? ''), 0);
+const activeDays = byDay.size;
+---
+<Base title="归档" description="DeskBox 全部文章的时间线与写作日历。">
+  <PageHead eyebrow="Archive · 归档" title="归档" count={posts.length} lead={`${activeDays} 个写作日，共 ${totalWords.toLocaleString('zh-CN')} 字。`} />
+
+  <section class="wrap cal-wrap rise" style="--i:3" aria-label="写作日历">
+    <div class="cal card">
+      <div class="cal__head">
+        <p class="eyebrow">Writing calendar · 最近一年</p>
+        <p class="cal__legend mono" aria-hidden="true">少 <i class="l0"></i><i class="l1"></i><i class="l2"></i> 多</p>
+      </div>
+      <div class="cal__scroll">
+        <div class="cal__grid" style={`--cols:${weeks.length}`}>
+          <div class="cal__months" aria-hidden="true">
+            {months.map((m) => <span style={`grid-column:${m.col + 1}`}>{m.label}</span>)}
+          </div>
+          <div class="cal__days">
+            {weeks.map((w) => (
+              <div class="cal__col">
+                {w.map((c) =>
+                  c.n ? (
+                    <a class={`cell l${Math.min(2, c.n)}`} href={postUrl(c.slug!)} title={`${c.key} · ${c.titles.join('、')}`} aria-label={`${c.key}：${c.titles.join('、')}`}></a>
+                  ) : (
+                    <span class={`cell${c.future ? ' fut' : ''}`} title={c.key} aria-hidden="true"></span>
+                  ),
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap tl" data-timeline aria-label="时间线">
+    <span class="tl__rail" aria-hidden="true"><i></i></span>
+    {[...years.entries()].map(([y, ms]) => (
+      <div class="tl__year">
+        <h2 class="tl__y display"><span>{y}</span><small class="mono">{[...ms.values()].flat().length} 篇</small></h2>
+        <div class="tl__months">
+          {[...ms.entries()].map(([m, list]) => (
+            <div class="tl__month">
+              <h3 class="tl__m mono">{Number(m)} 月</h3>
+              <ol>
+                {list.map((p) => (
+                  <li class="tl__item" data-tl-item>
+                    <a href={postUrl(p.data.slug)}>
+                      <span class="tl__dot" aria-hidden="true"></span>
+                      <time class="mono" datetime={p.data.pubDate.toISOString()}>{fmtShort(p.data.pubDate)}</time>
+                      <span class="tl__t">{p.data.title}</span>
+                      <span class="tl__tags">{(p.data.tags as string[]).map((t) => <span>#{t}</span>)}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </section>
+</Base>
+
+<style>
+  .cal {
+    padding: 22px 24px 18px;
+  }
+  .cal__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .cal__legend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .cal__legend i {
+    width: 11px;
+    height: 11px;
+    border-radius: 3px;
+    background: var(--paper-2);
+  }
+  .cal__legend i.l1,
+  .cell.l1 {
+    background: color-mix(in srgb, var(--accent) 55%, var(--paper-2));
+  }
+  .cal__legend i.l2,
+  .cell.l2 {
+    background: var(--accent);
+  }
+  .cal__scroll {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding-bottom: 4px;
+  }
+  .cal__grid {
+    min-width: 720px;
+  }
+  .cal__months {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    margin-bottom: 6px;
+    font: 11px var(--f-mono);
+    color: var(--ink-3);
+  }
+  .cal__months span {
+    white-space: nowrap;
+  }
+  .cal__days {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    gap: 3px;
+  }
+  .cal__col {
+    display: grid;
+    gap: 3px;
+  }
+  .cell {
+    display: block;
+    aspect-ratio: 1;
+    border-radius: 3px;
+    background: var(--paper-2);
+    transition: transform 0.3s var(--spring), box-shadow 0.3s;
+  }
+  .cell.fut {
+    opacity: 0.35;
+  }
+  a.cell {
+    box-shadow: 0 0 10px -2px rgb(var(--glow) / 0.6);
+  }
+  a.cell:hover {
+    transform: scale(1.7);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---------- 时间线 ---------- */
+  .tl {
+    position: relative;
+    margin-top: clamp(56px, 8vw, 96px);
+    padding-left: 0;
+  }
+  .tl__rail {
+    position: absolute;
+    left: calc(240px + 7px);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--line);
+  }
+  .tl__rail i {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(var(--accent), rgb(var(--glow) / 0.4));
+    transform-origin: top;
+    transform: scaleY(var(--draw, 0));
+    box-shadow: 0 0 10px rgb(var(--glow) / 0.6);
+  }
+  .tl__year {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+  .tl__year + .tl__year {
+    margin-top: 72px;
+  }
+  .tl__y {
+    position: sticky;
+    top: calc(var(--nav-h) + 40px);
+    align-self: start;
+    display: grid;
+    font-size: clamp(64px, 8vw, 112px);
+    letter-spacing: -0.05em;
+    line-height: 0.9;
+    color: color-mix(in srgb, var(--ink) 12%, transparent);
+  }
+  .tl__y small {
+    margin-top: 14px;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--ink-2);
+  }
+  .tl__months {
+    padding-left: 48px;
+  }
+  .tl__month + .tl__month {
+    margin-top: 40px;
+  }
+  .tl__m {
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    color: var(--ink-3);
+  }
+  .tl ol {
+    padding: 0;
+    list-style: none;
+  }
+  .tl__item a {
+    position: relative;
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+    transition: padding 0.45s var(--ease);
+  }
+  .tl__dot {
+    position: absolute;
+    left: -48px;
+    top: 50%;
+    width: 15px;
+    height: 15px;
+    margin: -7px 0 0 -0.5px;
+    border-radius: 50%;
+    border: 1px solid var(--line-2);
+    background: var(--paper);
+    transition: background 0.4s, border-color 0.4s, box-shadow 0.4s, transform 0.4s var(--spring);
+  }
+  .tl__item.passed .tl__dot {
+    border-color: var(--accent);
+    background: radial-gradient(circle, var(--accent) 35%, var(--paper) 40%);
+    box-shadow: 0 0 12px rgb(var(--glow) / 0.6);
+  }
+  .tl time {
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .tl__t {
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 1.5;
+    transition: color 0.25s;
+  }
+  .tl__tags {
+    display: flex;
+    gap: 10px;
+    font-size: 12.5px;
+    color: var(--ink-3);
+  }
+  @media (hover: hover) {
+    .tl__item a:hover {
+      padding-left: 10px;
+    }
+    .tl__item a:hover .tl__t {
+      color: var(--accent);
+    }
+    .tl__item a:hover .tl__dot {
+      transform: scale(1.35);
+    }
+  }
+  @media (max-width: 860px) {
+    .tl__rail {
+      left: 7px;
+    }
+    .tl__year {
+      grid-template-columns: 1fr;
+    }
+    .tl__y {
+      position: relative;
+      top: 0;
+      padding-left: 36px;
+      margin-bottom: 24px;
+      font-size: 64px;
+    }
+    .tl__months {
+      padding-left: 36px;
+    }
+    .tl__dot {
+      left: -36px;
+    }
+    .tl__item a {
+      grid-template-columns: 48px minmax(0, 1fr);
+    }
+    .tl__tags {
+      display: none;
+    }
+  }
+</style>

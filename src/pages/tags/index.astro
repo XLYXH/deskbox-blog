@@ -1,0 +1,122 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
+import Icon from '../../components/Icon.astro';
+import { getPosts, fmtDate } from '../../lib/posts';
+import { tags } from '../../config';
+import { tagUrl, postUrl } from '../../lib/url';
+import { hueOf } from '../../lib/meta';
+const posts = await getPosts();
+const list = tags.map((t) => ({ ...t, posts: posts.filter((p) => (p.data.tags as string[]).includes(t.name)) }));
+const untagged = posts.filter((p) => !p.data.tags.length).length;
+---
+<Base title="标签" description="按主题浏览 DeskBox：前端、后端、工程实践、阅读与生活。">
+  <PageHead eyebrow="Topics · 标签" title="标签" count={tags.length} countLabel="个" lead={`${posts.length} 篇文章分在 ${tags.length} 个主题下${untagged ? `，另有 ${untagged} 篇没有标签` : ''}。`} />
+  <ul class="tags wrap">
+    {list.map((t, i) => (
+      <li class="rise" style={`--i:${i}`}>
+        <a class="tag card spot" href={tagUrl(t.slug)} style={`--hue:${hueOf([t.name])}`} data-tilt="5">
+          <span class="tag__top">
+            <span class="tag__slug mono">/{t.slug}</span>
+            <span class="tag__n display">{t.posts.length}</span>
+          </span>
+          <span class="tag__name display">{t.name}</span>
+          <span class="tag__desc">{t.description}</span>
+          <span class="tag__list">
+            {t.posts.slice(0, 3).map((p) => <span><i class="mono">{fmtDate(p.data.pubDate).slice(5)}</i>{p.data.title}</span>)}
+            {t.posts.length === 0 && <span class="muted">还没有文章</span>}
+          </span>
+          <span class="tag__go"><Icon name="arrow" size={18} /></span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</Base>
+<style>
+  .tags {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    padding: 0;
+    list-style: none;
+  }
+  .tag {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    min-height: 320px;
+    padding: 24px;
+    overflow: hidden;
+    will-change: transform;
+  }
+  .tag::marker { content: none; }
+  .tag__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .tag__slug {
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .tag__n {
+    font-size: 64px;
+    line-height: 0.9;
+    color: oklch(0.7 0.14 var(--hue));
+    opacity: 0.9;
+  }
+  .tag__name {
+    margin-top: 36px;
+    font-size: 36px;
+  }
+  .tag__desc {
+    color: var(--ink-2);
+    font-size: 14px;
+  }
+  .tag__list {
+    display: grid;
+    align-content: start;
+    gap: 6px;
+    margin-top: auto;
+    min-height: 104px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line-2);
+    font-size: 13.5px;
+  }
+  .tag__list span {
+    display: flex;
+    gap: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tag__list i {
+    font-style: normal;
+    font-size: 11.5px;
+    color: var(--ink-3);
+    line-height: 1.9;
+  }
+  .tag__go {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    transform: scale(0) rotate(-45deg);
+    transition: transform 0.5s var(--spring);
+  }
+  .tag:hover .tag__go,
+  .tag:focus-visible .tag__go {
+    transform: none;
+  }
+  .tag::after { z-index: 2; }
+  .tag__glow {
+    display: none;
+  }
+</style>
