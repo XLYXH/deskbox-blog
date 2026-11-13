@@ -1,7 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
-import Mark from '../components/Mark.astro';
 import { site } from '../config';
 import { url } from '../lib/url';
 import { getStats, fmtDate } from '../lib/posts';
@@ -9,12 +8,10 @@ const s = await getStats();
 ---
 <Base title="关于" description={`关于 ${site.name}：${site.description}`}>
   <section class="about wrap">
-    <div class="about__intro">
-      <p class="eyebrow rise">About · 关于</p>
-      <h1 class="about__title display rise" style="--i:1">
-        <span>你好，</span><span>这里是 <em>{site.name}</em>。</span>
-      </h1>
-    </div>
+    <p class="kicker about__k rise">关于</p>
+    <h1 class="about__title display rise" style="--i:1">
+      你好，<br />这里是 <span class="about__name">{site.name}<span class="about__dot">.</span></span>
+    </h1>
     <div class="about__grid">
       <div class="about__text rise" style="--i:2">
         <p class="about__big">这里记录技术、阅读与生活。</p>
@@ -22,50 +19,56 @@ const s = await getStats();
         <h2 class="display">联系</h2>
         <ul class="links">
           {site.social.map((l) => (
-            <li><a href={url(l.href)} data-magnetic="0.2"><Icon name={l.icon} size={18} /><span>{l.label}</span><Icon name="arrow" size={14} class="go" /></a></li>
+            <li><a href={url(l.href)}><Icon name={l.icon} size={18} /><span>{l.label}</span><span class="links__go" aria-hidden="true">→</span></a></li>
           ))}
         </ul>
       </div>
-      <aside class="about__card card spot rise" style="--i:3" data-tilt="5">
-        <div class="about__mark"><Mark size={64} /></div>
-        <p class="about__name display">{site.name}</p>
-        <p class="muted">{site.description}</p>
+
+      <!-- 借书卡：统计数字像盖上去的日期章 -->
+      <aside class="lib rise" style="--i:3" aria-label="站点概况">
+        <p class="lib__h"><span class="display">{site.name}</span><span class="mono">No. {String(s.posts).padStart(3, '0')}</span></p>
         <dl>
-          <div><dt>文章</dt><dd class="num" data-count={s.posts}>{s.posts}</dd></div>
-          <div><dt>字数</dt><dd class="num" data-count={s.words}>{s.words}</dd></div>
-          <div><dt>第一篇</dt><dd class="mono">{s.first ? fmtDate(s.first) : '—'}</dd></div>
-          <div><dt>最近更新</dt><dd class="mono">{s.last ? fmtDate(s.last) : '—'}</dd></div>
+          <div><dt>文章</dt><dd><span class="lib__stamp">{s.posts} 篇</span></dd></div>
+          <div><dt>字数</dt><dd><span class="lib__stamp">{s.words.toLocaleString('zh-CN')}</span></dd></div>
+          <div><dt>第一篇</dt><dd><span class="lib__stamp">{s.first ? fmtDate(s.first) : '—'}</span></dd></div>
+          <div><dt>最近更新</dt><dd><span class="lib__stamp lib__stamp--red">{s.last ? fmtDate(s.last) : '—'}</span></dd></div>
         </dl>
+        <p class="lib__foot">{site.description}</p>
       </aside>
     </div>
 
     <section class="colophon rise" aria-labelledby="colo">
-      <h2 id="colo" class="eyebrow">Colophon · 这个站是怎么做的</h2>
-      <ul>
-        <li><b>框架</b><span>Astro 静态生成，文章是仓库里的 Markdown / MDX</span></li>
-        <li><b>字体</b><span>Fraunces、Geist、Noto Serif SC（按页面用字子集化），全部自托管</span></li>
-        <li><b>搜索</b><span>Pagefind 构建期全文索引，按 <kbd>⌘K</kbd> 或 <kbd>/</kbd> 打开</span></li>
-        <li><b>主题</b><span>白天是纸面，夜里是台灯；拉一下右上角的灯绳试试</span></li>
-      </ul>
+      <h2 id="colo" class="display">版权页</h2>
+      <dl>
+        <div><dt>框架</dt><dd>Astro 静态生成，文章是仓库里的 Markdown / MDX</dd></div>
+        <div><dt>字体</dt><dd>Fraunces、Geist、Noto Serif SC（按页面用字子集化），全部自托管</dd></div>
+        <div><dt>搜索</dt><dd>Pagefind 构建期全文索引，按 <kbd class="key">⌘</kbd> <kbd class="key">K</kbd> 或 <kbd class="key">/</kbd> 打开</dd></div>
+        <div><dt>主题</dt><dd>白天是纸，夜里是一张深色卡纸；右上角的墙面开关可以切换</dd></div>
+        <div><dt>组件</dt><dd>按键、开关、勾选框等细节参考了 Uiverse.io 社区的开源组件（MIT），重新手写</dd></div>
+      </dl>
     </section>
   </section>
 </Base>
 <style>
   .about {
-    padding-top: clamp(16px, 4vw, 48px);
+    padding-top: clamp(16px, 4vw, 40px);
+  }
+  .about__k {
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--ink);
   }
   .about__title {
-    margin-top: 18px;
-    font-size: clamp(46px, 8vw, 112px);
+    margin-top: clamp(20px, 3vw, 32px);
+    font-size: clamp(46px, 8vw, 108px);
     letter-spacing: -0.04em;
-    line-height: 1.04;
+    line-height: 1.02;
   }
-  .about__title span {
-    display: block;
-  }
-  .about__title em {
+  .about__name {
     font-style: italic;
-    color: var(--accent);
+  }
+  .about__dot {
+    color: var(--red);
+    font-style: normal;
   }
   .about__grid {
     display: grid;
@@ -85,118 +88,150 @@ const s = await getStats();
     margin-bottom: 14px;
   }
   .about__text h2 {
-    margin: 48px 0 16px;
+    margin: 48px 0 8px;
     font-size: 24px;
     color: var(--ink);
   }
   .links {
-    display: grid;
-    gap: 10px;
     padding: 0;
     list-style: none;
+    border-top: 1px solid var(--ink);
   }
   .links a {
     display: flex;
     align-items: center;
     gap: 14px;
     height: 58px;
-    padding: 0 20px;
-    border-radius: 16px;
-    border: 1px solid var(--line);
-    background: color-mix(in srgb, var(--card) 70%, transparent);
+    border-bottom: 1px solid var(--rule);
     color: var(--ink);
-    font-size: 16px;
-    transition: background 0.3s, border-color 0.3s;
+    font-size: 17px;
+    font-weight: 500;
+    transition: padding 0.3s var(--ease), background 0.2s;
+  }
+  .links__go {
+    margin-left: auto;
+    color: var(--red);
+    transition: transform 0.3s var(--ease);
   }
   .links a:hover {
-    background: var(--card);
-    border-color: var(--line-2);
+    padding-left: 10px;
+    background: var(--hi-soft);
   }
-  .links :global(.go) {
-    margin-left: auto;
-    color: var(--ink-3);
-    transition: transform 0.4s var(--ease), color 0.3s;
+  .links a:hover .links__go {
+    transform: translateX(-10px);
   }
-  .links a:hover :global(.go) {
-    transform: translate(3px, -3px);
-    color: var(--accent);
-  }
-  .about__card {
-    padding: 30px;
-    text-align: center;
+
+  .lib {
     position: sticky;
     top: calc(var(--nav-h) + 40px);
-    will-change: transform;
+    padding: 18px 20px 16px;
+    background: #f6ecd2;
+    color: #2b261d;
+    border: 1px solid #d6c79f;
+    rotate: 1.2deg;
+    box-shadow: 4px 5px 0 rgb(0 0 0 / 0.06);
   }
-  .about__mark {
-    display: grid;
-    place-items: center;
-    width: 112px;
-    height: 112px;
-    margin: 0 auto 18px;
-    border-radius: 32px;
-    background: radial-gradient(circle at 50% 30%, rgb(var(--glow) / 0.28), transparent 70%), var(--paper-2);
-    box-shadow: inset 0 1px 0 var(--glass-edge);
+  :global([data-theme='dark']) .lib {
+    background: #e7dcc0;
+    filter: brightness(0.92);
   }
-  .about__name {
-    font-size: 30px;
+  .lib__h {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #2b261d;
   }
-  .about__card dl {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px 12px;
-    margin-top: 24px;
-    padding-top: 22px;
-    border-top: 1px dashed var(--line-2);
-    text-align: left;
+  .lib__h .display {
+    font-size: 24px;
   }
-  .about__card dt {
+  .lib__h .mono {
     font-size: 12px;
-    color: var(--ink-2);
+    color: #a32812;
   }
-  .about__card dd {
-    margin-top: 4px;
-    font: 600 20px/1.2 var(--f-display);
+  .lib dl {
+    margin-top: 2px;
   }
-  .about__card dd.mono {
-    font: 500 14px/1.6 var(--f-mono);
+  .lib dl div {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    align-items: center;
+    min-height: 46px;
+    border-bottom: 1px solid #cdbb8c;
   }
+  .lib dt {
+    font-size: 13px;
+    color: #5b5240;
+    border-right: 1px solid #cdbb8c;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+  }
+  .lib dd {
+    padding-left: 14px;
+  }
+  /* 印章：边框、轻微旋转、颜色不均匀 */
+  .lib__stamp {
+    display: inline-block;
+    padding: 1px 8px;
+    border: 1.5px solid #2f4a7a;
+    border-radius: 3px;
+    font: 600 14px/1.5 var(--f-mono);
+    color: #2f4a7a;
+    rotate: -3deg;
+    mask-image: radial-gradient(circle at 30% 40%, #000 60%, rgb(0 0 0 / 0.75) 100%);
+  }
+  .lib div:nth-child(2n) .lib__stamp {
+    rotate: 2deg;
+  }
+  .lib__stamp--red {
+    border-color: #a32812;
+    color: #a32812;
+  }
+  .lib__foot {
+    margin-top: 12px;
+    font-size: 13px;
+    color: #5b5240;
+  }
+
   .colophon {
+    max-width: 760px;
     margin-top: clamp(64px, 9vw, 110px);
-    padding-top: 28px;
-    border-top: 1px solid var(--line);
+    padding-top: 14px;
+    border-top: 2px solid var(--ink);
   }
-  .colophon ul {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px 32px;
-    margin-top: 22px;
-    padding: 0;
-    list-style: none;
+  .colophon h2 {
+    font-size: 24px;
   }
-  .colophon li {
+  .colophon dl {
+    margin-top: 14px;
+  }
+  .colophon dl div {
     display: grid;
-    gap: 6px;
-    font-size: 14.5px;
+    grid-template-columns: 80px 1fr;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--rule-2);
+    font-size: 15px;
+  }
+  .colophon dt {
+    font-weight: 600;
+  }
+  .colophon dd {
     color: var(--ink-2);
   }
-  .colophon b {
-    font-weight: 600;
-    color: var(--ink);
-  }
-  kbd {
-    font: 500 11px/1 var(--f-mono);
-    padding: 3px 5px;
-    border-radius: 5px;
-    border: 1px solid var(--line-2);
+  .colophon .key {
+    --h: 22px;
+    font-size: 11px;
   }
   @media (max-width: 860px) {
     .about__grid {
       grid-template-columns: 1fr;
     }
-    .about__card {
+    .lib {
       position: relative;
       top: 0;
+      max-width: 420px;
     }
   }
 </style>

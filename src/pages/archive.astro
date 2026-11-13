@@ -33,12 +33,12 @@ const totalWords = posts.reduce((s, p) => s + wordCount(p.body ?? ''), 0);
 const activeDays = byDay.size;
 ---
 <Base title="归档" description="DeskBox 全部文章的时间线与写作日历。">
-  <PageHead eyebrow="Archive · 归档" title="归档" count={posts.length} lead={`${activeDays} 个写作日，共 ${totalWords.toLocaleString('zh-CN')} 字。`} />
+  <PageHead eyebrow="按时间" title="归档" count={posts.length} lead={`${activeDays} 个写作日，共 ${totalWords.toLocaleString('zh-CN')} 字。`} />
 
   <section class="wrap cal-wrap rise" style="--i:3" aria-label="写作日历">
-    <div class="cal card">
+    <div class="cal">
       <div class="cal__head">
-        <p class="eyebrow">Writing calendar · 最近一年</p>
+        <p class="kicker">写作日历 · 最近一年</p>
         <p class="cal__legend mono" aria-hidden="true">少 <i class="l0"></i><i class="l1"></i><i class="l2"></i> 多</p>
       </div>
       <div class="cal__scroll" data-cal-scroll>
@@ -95,7 +95,10 @@ const activeDays = byDay.size;
 
 <style>
   .cal {
-    padding: 22px 24px 18px;
+    padding: 20px 22px 16px;
+    background: var(--sheet);
+    border: 1px solid var(--ink);
+    box-shadow: 5px 5px 0 var(--paper-2), 5px 5px 0 1px var(--rule-2);
   }
   .cal__head {
     display: flex;
@@ -114,16 +117,16 @@ const activeDays = byDay.size;
   .cal__legend i {
     width: 11px;
     height: 11px;
-    border-radius: 3px;
+    border-radius: 1px;
     background: var(--paper-2);
   }
   .cal__legend i.l1,
   .cell.l1 {
-    background: color-mix(in srgb, var(--accent) 55%, var(--paper-2));
+    background: color-mix(in srgb, var(--ink) 45%, var(--paper-2));
   }
   .cal__legend i.l2,
   .cell.l2 {
-    background: var(--accent);
+    background: var(--red);
   }
   .cal__scroll {
     overflow-x: auto;
@@ -155,15 +158,16 @@ const activeDays = byDay.size;
   .cell {
     display: block;
     aspect-ratio: 1;
-    border-radius: 3px;
+    border-radius: 1px;
     background: var(--paper-2);
-    transition: transform 0.3s var(--spring), box-shadow 0.3s;
+    transition: transform 0.3s var(--spring);
   }
   .cell.fut {
     opacity: 0.35;
   }
   span.cell.hit {
-    box-shadow: 0 0 10px -2px rgb(var(--glow) / 0.6);
+    background: var(--ink);
+    rotate: -6deg;
   }
   span.cell.hit:hover {
     transform: scale(1.7);
@@ -183,15 +187,14 @@ const activeDays = byDay.size;
     top: 0;
     bottom: 0;
     width: 1px;
-    background: var(--line);
+    background: repeating-linear-gradient(180deg, var(--rule-2) 0 4px, transparent 4px 8px);
   }
   .tl__rail i {
     position: absolute;
     inset: 0;
-    background: linear-gradient(var(--accent), rgb(var(--glow) / 0.4));
+    background: var(--ink);
     transform-origin: top;
     transform: scaleY(var(--draw, 0));
-    box-shadow: 0 0 10px rgb(var(--glow) / 0.6);
   }
   .tl__year {
     display: grid;
@@ -205,15 +208,15 @@ const activeDays = byDay.size;
     top: calc(var(--nav-h) + 40px);
     align-self: start;
     display: grid;
-    font-size: clamp(64px, 8vw, 112px);
+    font-size: clamp(56px, 6.4vw, 92px);
     letter-spacing: -0.05em;
     line-height: 0.9;
-    color: var(--ink-3);
+    color: var(--ink);
   }
   .tl__y small {
+    white-space: nowrap;
     margin-top: 14px;
     font-size: 12px;
-    letter-spacing: 0.1em;
     color: var(--ink-2);
   }
   .tl__months {
@@ -226,8 +229,7 @@ const activeDays = byDay.size;
     margin-bottom: 8px;
     font-size: 12px;
     font-weight: 500;
-    letter-spacing: 0.14em;
-    color: var(--ink-3);
+    color: var(--red-ink);
   }
   .tl ol {
     padding: 0;
@@ -240,8 +242,8 @@ const activeDays = byDay.size;
     align-items: baseline;
     gap: 16px;
     padding: 16px 0;
-    border-bottom: 1px solid var(--line);
-    transition: padding 0.45s var(--ease);
+    border-bottom: 1px solid var(--rule);
+    transition: padding 0.35s var(--ease);
   }
   .tl__dot {
     position: absolute;
@@ -250,15 +252,29 @@ const activeDays = byDay.size;
     width: 15px;
     height: 15px;
     margin: -7px 0 0 -0.5px;
-    border-radius: 50%;
-    border: 1px solid var(--line-2);
+    border-radius: 2px;
+    border: 1.5px solid var(--ink);
     background: var(--paper);
-    transition: background 0.4s, border-color 0.4s, box-shadow 0.4s, transform 0.4s var(--spring);
+    transition: background 0.25s, transform 0.3s var(--spring);
+  }
+  /* 读到这里就打一个勾（参考 Uiverse 的勾选框动画） */
+  .tl__dot::after {
+    content: '';
+    position: absolute;
+    left: 3.5px;
+    top: 0.5px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--paper);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) scale(0);
+    transition: transform 0.3s var(--spring);
   }
   .tl__item.passed .tl__dot {
-    border-color: var(--accent);
-    background: radial-gradient(circle, var(--accent) 35%, var(--paper) 40%);
-    box-shadow: 0 0 12px rgb(var(--glow) / 0.6);
+    background: var(--ink);
+  }
+  .tl__item.passed .tl__dot::after {
+    transform: rotate(45deg) scale(1);
   }
   .tl time {
     font-size: 13px;
@@ -281,10 +297,10 @@ const activeDays = byDay.size;
       padding-left: 10px;
     }
     .tl__item a:hover .tl__t {
-      color: var(--accent);
+      background: linear-gradient(var(--hi-soft), var(--hi-soft)) 0 88% / 100% 0.5em no-repeat;
     }
     .tl__item a:hover .tl__dot {
-      transform: scale(1.35);
+      transform: rotate(-8deg) scale(1.15);
     }
   }
   @media (max-width: 860px) {

@@ -5,86 +5,70 @@ import { url } from '../lib/url';
 ---
 <Base title="404 · 这页不在桌上" description="页面不存在。" noindex>
   <section class="nf wrap">
-    <div class="nf__lamp" aria-hidden="true">
-      <span class="nf__cord"></span>
-      <span class="nf__shade"></span>
-      <span class="nf__beam"></span>
-    </div>
-    <p class="eyebrow">Error · 404</p>
-    <h1 class="nf__code display" aria-label="404"><span>4</span><span class="nf__o">0</span><span>4</span></h1>
-    <p class="nf__t display">这页不在桌上。</p>
-    <p class="nf__d muted">可能被收进了抽屉，或者链接写错了。</p>
-    <div class="nf__cta">
-      <a class="btn" href={url('/')} data-magnetic>回到首页 <Icon name="right" /></a>
-      <button class="btn btn--ghost" type="button" data-search-open data-magnetic><Icon name="search" /> 搜索文章</button>
+    <p class="kicker nf__k">错误 · 404</p>
+    <div class="nf__row">
+      <h1 class="nf__code display" aria-label="404">
+        <span aria-hidden="true">4</span><span class="nf__o" aria-hidden="true">0<svg viewBox="0 0 200 200" aria-hidden="true"><path d="M100 18c46 0 82 35 82 80 0 47-36 84-84 84-45 0-80-36-80-82 0-44 36-80 80-81" /><path d="M150 40c12 10 20 22 24 38" /></svg></span><span aria-hidden="true">4</span>
+      </h1>
+      <div class="nf__note">
+        <p class="nf__t display">这页不在桌上。</p>
+        <p class="nf__d muted">可能被收进了抽屉，或者链接抄错了一位。桌上只留下一圈咖啡渍。</p>
+        <div class="nf__cta">
+          <a class="btn" href={url('/')}>回到首页 <Icon name="right" /></a>
+          <button class="btn btn--paper" type="button" data-search-open><Icon name="search" /> 搜索文章</button>
+        </div>
+      </div>
     </div>
   </section>
 </Base>
 <style>
   .nf {
-    position: relative;
-    text-align: center;
-    padding-top: clamp(40px, 8vw, 100px);
+    padding-top: clamp(16px, 4vw, 40px);
   }
-  .nf__lamp {
-    position: absolute;
-    left: 50%;
-    top: calc(-1 * var(--nav-h) - 60px);
-    width: 0;
-    height: 0;
+  .nf__k {
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--ink);
   }
-  .nf__cord {
-    position: absolute;
-    left: -0.5px;
-    top: 0;
-    width: 1px;
-    height: 150px;
-    background: var(--line-2);
-  }
-  .nf__shade {
-    position: absolute;
-    left: -38px;
-    top: 150px;
-    width: 76px;
-    height: 34px;
-    border-radius: 40px 40px 6px 6px;
-    background: var(--ink);
-  }
-  .nf__beam {
-    position: absolute;
-    left: -260px;
-    top: 182px;
-    width: 520px;
-    height: 520px;
-    background: radial-gradient(ellipse 50% 80% at 50% 0, rgb(var(--glow) / 0.32), transparent 70%);
-    clip-path: polygon(43% 0, 57% 0, 100% 100%, 0 100%);
-    animation: flicker 5s infinite;
-    pointer-events: none;
-  }
-  @keyframes flicker {
-    0%, 7%, 9%, 11%, 60%, 62%, 100% { opacity: 1; }
-    8%, 10%, 61% { opacity: 0.2; }
-  }
-  .nf .eyebrow {
-    margin-top: 100px;
+  .nf__row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 420px);
+    align-items: end;
+    gap: clamp(24px, 5vw, 72px);
+    margin-top: clamp(24px, 4vw, 48px);
   }
   .nf__code {
-    margin-top: 10px;
-    font-size: clamp(120px, 26vw, 300px);
-    line-height: 0.9;
+    font-size: clamp(130px, 24vw, 320px);
+    line-height: 0.82;
     letter-spacing: -0.06em;
+    font-weight: 700;
   }
   .nf__o {
+    position: relative;
     display: inline-block;
-    color: var(--accent);
-    font-style: italic;
-    animation: wobble 4s ease-in-out infinite;
+    color: transparent;
   }
-  @keyframes wobble {
-    50% { transform: rotate(-8deg) translateY(-4%); }
+  /* 0 是一圈咖啡渍 */
+  .nf__o svg {
+    position: absolute;
+    left: -6%;
+    top: 4%;
+    width: 112%;
+    overflow: visible;
+    rotate: -12deg;
+  }
+  .nf__o path {
+    fill: none;
+    stroke: #8a5a2b;
+    stroke-width: 12;
+    stroke-linecap: round;
+    opacity: 0.55;
+  }
+  .nf__o path + path {
+    stroke-width: 5;
+    opacity: 0.35;
   }
   .nf__t {
-    font-size: clamp(26px, 3vw, 38px);
+    font-size: clamp(28px, 3vw, 40px);
   }
   .nf__d {
     margin-top: 10px;
@@ -92,8 +76,12 @@ import { url } from '../lib/url';
   .nf__cta {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 32px;
+    gap: 16px;
+    margin-top: 28px;
+  }
+  @media (max-width: 760px) {
+    .nf__row {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

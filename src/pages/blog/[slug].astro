@@ -38,30 +38,36 @@ const jsonld = {
   image: new URL(url(`/og/${d.slug}.png`), Astro.site).href,
 };
 ---
-<Base title={d.title} description={d.description} type="article" image={`/og/${d.slug}.png`} published={d.pubDate} modified={d.updatedDate} tags={d.tags} canonical={canonical} lamp={false} jsonld={jsonld}>
+<Base title={d.title} description={d.description} type="article" image={`/og/${d.slug}.png`} published={d.pubDate} modified={d.updatedDate} tags={d.tags} canonical={canonical} jsonld={jsonld}>
   <article class="post" lang={d.lang} data-pagefind-body>
     <header class="post__head wrap">
-      <nav data-pagefind-ignore class="crumb mono rise" aria-label="面包屑">
-        <a href={url('/blog/')}>文章</a>
-        {primary && <><span aria-hidden="true">/</span><a href={tagUrl(tagSlug(primary))}>{primary}</a></>}
-        {d.series && <><span aria-hidden="true">/</span><span>{d.series.name} · {d.series.order}</span></>}
-      </nav>
-      <h1 data-pagefind-meta="title" class="post__title display" style={`view-transition-name: t-${d.slug}`}>{d.title}</h1>
-      <p class="post__lead rise" style="--i:1">{d.description}</p>
-      <div class="post__meta rise" style="--i:2">
-        <span><Icon name="calendar" size={15} /><time datetime={d.pubDate.toISOString()} data-pagefind-meta="date">{fmtDate(d.pubDate)}</time></span>
-        {d.updatedDate && <span><Icon name="layers" size={15} />更新于 <time datetime={d.updatedDate.toISOString()}>{fmtDate(d.updatedDate)}</time></span>}
-        <span><Icon name="file" size={15} />{words.toLocaleString('zh-CN')} 字</span>
-        <span><Icon name="clock" size={15} />约 {minutes} 分钟</span>
+      <div class="stamp rise" aria-hidden="true" data-pagefind-ignore>
+        <span class="stamp__d">{fmtDate(d.pubDate).slice(8)}</span>
+        <span class="stamp__ym mono">{fmtDate(d.pubDate).slice(0, 7)}</span>
+      </div>
+      <div class="post__headmain">
+        <nav data-pagefind-ignore class="crumb kicker rise" aria-label="面包屑">
+          <a href={url('/blog/')}>文章</a>
+          {primary && <><span aria-hidden="true">／</span><a href={tagUrl(tagSlug(primary))}>{primary}</a></>}
+          {d.series && <><span aria-hidden="true">／</span><span>{d.series.name} 第 {d.series.order} 篇</span></>}
+        </nav>
+        <h1 data-pagefind-meta="title" class="post__title display" style={`view-transition-name: t-${d.slug}`}>{d.title}</h1>
+        <p class="post__lead rise" style="--i:1">{d.description}</p>
+        <p class="post__meta rise" style="--i:2">
+          <time datetime={d.pubDate.toISOString()} data-pagefind-meta="date">{fmtDate(d.pubDate)}</time>
+          {d.updatedDate && <span>更新于 <time datetime={d.updatedDate.toISOString()}>{fmtDate(d.updatedDate)}</time></span>}
+          <span>{words.toLocaleString('zh-CN')} 字</span>
+          <span>约 {minutes} 分钟</span>
+        </p>
         {(d.tags as string[]).length > 0 && (
-          <span class="post__tags">{(d.tags as string[]).map((t) => <a class="chip" href={tagUrl(tagSlug(t))}>{t}</a>)}</span>
+          <p class="post__tags rise" style="--i:3" data-pagefind-ignore>{(d.tags as string[]).map((t) => <a class="tag" href={tagUrl(tagSlug(t))}>{t}</a>)}</p>
         )}
       </div>
     </header>
 
     {d.cover && (
       <figure class="post__cover wrap rise" style="--i:3">
-        <div class="post__cover-in" data-tilt="3">
+        <div class="post__cover-in">
           <Image src={d.cover} alt={d.coverAlt ?? ''} widths={[480, 720, 1080, 1440]} sizes="(min-width: 1100px) 1040px, 100vw" loading="eager" fetchpriority="high" />
         </div>
       </figure>
@@ -72,11 +78,11 @@ const jsonld = {
         <div class="prose" data-article>
           <Content />
         </div>
-        <p data-pagefind-ignore class="post__end mono" aria-hidden="true"><span></span>全文完<span></span></p>
+        <p data-pagefind-ignore class="post__end" aria-hidden="true"><span class="post__end-mark">■</span> 全文完</p>
 
         {series.length > 1 && (
-          <aside data-pagefind-ignore class="series card" aria-label="专栏">
-            <p class="eyebrow">专栏 · {d.series!.name}</p>
+          <aside data-pagefind-ignore class="series" aria-label="专栏">
+            <p class="kicker">专栏</p><p class="series__name display">{d.series!.name}</p>
             <ol>
               {series.map((p) => (
                 <li>
@@ -91,26 +97,26 @@ const jsonld = {
 
         <nav data-pagefind-ignore class="pn" aria-label="上一篇与下一篇">
           {older ? (
-            <a class="pn__a card spot" href={postUrl(older.data.slug)} rel="prev">
-              <span class="pn__k mono"><Icon name="left" size={14} /> 上一篇</span>
+            <a class="pn__a" href={postUrl(older.data.slug)} rel="prev">
+              <span class="pn__k">← 上一篇</span>
               <span class="pn__t">{older.data.title}</span>
             </a>
           ) : <span />}
           {newer ? (
-            <a class="pn__a pn__a--next card spot" href={postUrl(newer.data.slug)} rel="next">
-              <span class="pn__k mono">下一篇 <Icon name="right" size={14} /></span>
+            <a class="pn__a pn__a--next" href={postUrl(newer.data.slug)} rel="next">
+              <span class="pn__k">下一篇 →</span>
               <span class="pn__t">{newer.data.title}</span>
             </a>
           ) : <span />}
         </nav>
 
-        <section data-pagefind-ignore class="cmt card" aria-label="评论">
+        <section data-pagefind-ignore class="cmt" aria-label="评论">
           <div class="cmt__head">
             <div>
-              <p class="cmt__t">评论</p>
+              <h2 class="cmt__t display">评论</h2>
               <p class="cmt__d muted">评论由 GitHub Discussions（Giscus）提供，点击后才会加载第三方内容。<a href={url('/privacy/')}>隐私说明</a></p>
             </div>
-            <button class="btn btn--ghost" type="button" data-comments-load><Icon name="chat" size={16} /> 加载评论</button>
+            <button class="btn btn--paper" type="button" data-comments-load><Icon name="chat" size={16} /> 加载评论</button>
           </div>
           <div data-comments data-config={JSON.stringify(site.comments)}></div>
         </section>
@@ -119,14 +125,14 @@ const jsonld = {
       {toc.length > 0 && (
         <aside class="post__aside" aria-label="目录">
           <nav class="toc" data-toc>
-            <p class="toc__h mono">目录 · CONTENTS</p>
+            <p class="toc__h">本文目录</p>
             <span class="toc__ind" data-toc-ind aria-hidden="true"></span>
             <ol>
               {toc.map((h) => (
                 <li class={`d${h.depth}`}><a href={`#${h.slug}`} data-id={h.slug}>{h.text}</a></li>
               ))}
             </ol>
-            <div class="toc__prog mono" aria-hidden="true"><span class="toc__bar"><i></i></span></div>
+            <p class="toc__prog mono" aria-hidden="true"><span class="toc__bar"><i></i></span></p>
           </nav>
         </aside>
       )}
@@ -134,7 +140,7 @@ const jsonld = {
   </article>
 
   <!-- 浮动阅读工具 -->
-  <div class="dock glass" data-dock>
+  <div class="dock" data-dock>
     <button type="button" class="dock__ring" data-top aria-label="回到顶部">
       <svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.9" pathLength="100" class="trk" /><circle cx="18" cy="18" r="15.9" pathLength="100" class="bar" data-ring /></svg>
       <span class="dock__pct mono" data-pct>0</span>
@@ -146,97 +152,122 @@ const jsonld = {
   <div class="sheet" data-sheet data-view="reader">
     {toc.length > 0 && (
       <nav class="sheet__toc" data-toc aria-label="目录">
-        <p class="toc__h mono">目录</p>
+        <p class="toc__h">目录</p>
         <span class="toc__ind" data-toc-ind aria-hidden="true"></span>
         <ol>{toc.map((h) => <li class={`d${h.depth}`}><a href={`#${h.slug}`} data-id={h.slug}>{h.text}</a></li>)}</ol>
       </nav>
     )}
     <div class="sheet__reader" data-reader>
-      <p class="toc__h mono">阅读设置</p>
+      <p class="toc__h">阅读设置</p>
+      <p class="seg__l muted">字号</p>
       <div class="seg" role="group" aria-label="字号">
-        <button type="button" data-size="s">小</button>
-        <button type="button" data-size="m">中</button>
-        <button type="button" data-size="l">大</button>
+        <button type="button" class="key" data-size="s">小</button>
+        <button type="button" class="key" data-size="m">中</button>
+        <button type="button" class="key" data-size="l">大</button>
       </div>
+      <p class="seg__l muted">正文字体</p>
       <div class="seg" role="group" aria-label="正文字体">
-        <button type="button" data-font="sans">黑体</button>
-        <button type="button" data-font="serif">宋体</button>
+        <button type="button" class="key" data-font="sans">黑体</button>
+        <button type="button" class="key" data-font="serif">宋体</button>
       </div>
     </div>
   </div>
 </Base>
 
 <style>
+  /* ---------- 文章头：左侧日期戳 + 左对齐标题（不居中） ---------- */
   .post__head {
-    max-width: 920px;
-    padding-top: clamp(16px, 4vw, 48px);
-    text-align: center;
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: 0 clamp(24px, 4vw, 56px);
+    padding-top: clamp(12px, 3vw, 36px);
+  }
+  .stamp {
+    display: grid;
+    justify-items: start;
+    align-content: start;
+    padding-top: 6px;
+    border-top: 2px solid var(--ink);
+  }
+  .stamp__d {
+    font: 700 84px/1 var(--f-display);
+    font-variation-settings: 'opsz' 144;
+    letter-spacing: -0.05em;
+  }
+  .stamp__ym {
+    font-size: 13px;
+    color: var(--red-ink);
+  }
+  .post__headmain {
+    max-width: 900px;
   }
   .crumb {
-    display: inline-flex;
+    display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    font-size: 12.5px;
-    color: var(--ink-2);
+    gap: 6px;
+  }
+  .crumb a {
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 3px;
+    transition: text-decoration-color 0.2s;
   }
   .crumb a:hover {
-    color: var(--accent);
+    text-decoration-color: currentColor;
   }
   .post__title {
-    margin: 22px auto 0;
-    max-width: 18em;
-    font-size: clamp(34px, 5.4vw, 66px);
-    line-height: 1.16;
+    margin-top: 14px;
+    max-width: 17em;
+    font-size: clamp(34px, 5.2vw, 64px);
+    line-height: 1.14;
     letter-spacing: -0.025em;
     text-wrap: balance;
   }
   .post__lead {
-    margin: 22px auto 0;
-    max-width: 36em;
+    margin-top: 22px;
+    max-width: 34em;
     font-size: clamp(16px, 1.4vw, 19px);
     line-height: 1.85;
     color: var(--ink-2);
-    text-wrap: balance;
   }
   .post__meta {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 10px 20px;
-    margin-top: 28px;
-    font-size: 13.5px;
+    gap: 4px 0;
+    margin-top: 24px;
+    font: 13px/1.6 var(--f-mono);
     color: var(--ink-2);
   }
-  .post__meta > span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+  .post__meta > * + *::before {
+    content: '/';
+    margin: 0 12px;
+    color: var(--rule-2);
   }
   .post__tags {
-    gap: 6px !important;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
   }
   .post__cover {
-    max-width: 1100px;
-    margin-top: clamp(32px, 5vw, 60px);
+    margin-top: clamp(32px, 5vw, 56px);
   }
   .post__cover-in {
-    border-radius: var(--r-lg);
-    overflow: hidden;
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow-lg);
-    will-change: transform;
+    padding: clamp(8px, 1vw, 14px);
+    background: var(--sheet);
+    border: 1px solid var(--rule-2);
+    box-shadow: 6px 6px 0 var(--paper-2);
   }
   .post__cover-in :global(img) {
     width: 100%;
   }
 
+  /* ---------- 正文三栏 ---------- */
   .post__grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 700px) minmax(0, 1fr);
-    gap: 48px;
-    margin-top: clamp(40px, 6vw, 80px);
+    grid-template-columns: 150px minmax(0, 700px) minmax(0, 1fr);
+    gap: clamp(24px, 4vw, 56px);
+    margin-top: clamp(40px, 6vw, 72px);
   }
   .post__body {
     grid-column: 2;
@@ -248,34 +279,34 @@ const jsonld = {
   }
   .toc {
     position: sticky;
-    top: calc(var(--nav-h) + 40px);
-    max-width: 260px;
+    top: calc(var(--nav-h) + 36px);
+    max-width: 250px;
+    padding-top: 10px;
+    border-top: 2px solid var(--ink);
   }
   .toc__h {
-    margin-bottom: 14px;
-    font-size: 10.5px;
-    letter-spacing: 0.16em;
-    color: var(--ink-3);
+    margin-bottom: 10px;
+    font: 600 13px/1.4 var(--f-sans);
+    color: var(--ink);
   }
   .toc ol,
   .sheet__toc ol {
     position: relative;
     padding: 0;
     list-style: none;
-    border-left: 1px solid var(--line);
   }
   .toc li a,
   .sheet__toc li a {
     display: block;
-    padding: 7px 0 7px 16px;
+    padding: 6px 0 6px 18px;
     font-size: 13.5px;
     line-height: 1.5;
     color: var(--ink-2);
-    transition: color 0.25s, transform 0.4s var(--ease);
+    transition: color 0.2s;
   }
   .toc li.d3 a,
   .sheet__toc li.d3 a {
-    padding-left: 30px;
+    padding-left: 32px;
     font-size: 13px;
   }
   .toc li a:hover {
@@ -285,42 +316,41 @@ const jsonld = {
   .sheet__toc li a.on {
     color: var(--ink);
     font-weight: 600;
-    transform: translateX(3px);
   }
   .toc,
   .sheet__toc {
     position: relative;
   }
+  /* 当前章节：左边一个红色的手写箭头 */
   .toc__ind {
     position: absolute;
-    left: -1px;
+    left: 0;
     top: 0;
-    width: 2px;
+    width: 12px;
     height: 0;
-    margin-top: 24px;
-    border-radius: 2px;
-    background: var(--accent);
-    box-shadow: 0 0 12px rgb(var(--glow) / 0.8);
+    margin-top: 41px;
     opacity: 0;
-    transition: transform 0.5s var(--spring), height 0.5s var(--spring), opacity 0.3s;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M1 6.3c3-.2 6-.3 9.2-.3M7 2.6 10.4 6 7 9.4' fill='none' stroke='%23c8321a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / 12px 12px no-repeat;
+    transition: transform 0.4s var(--ease), height 0.4s var(--ease), opacity 0.2s;
   }
   .sheet__toc .toc__ind {
-    margin-top: 28px;
+    margin-top: 34px;
   }
   .toc__prog {
-    margin-top: 18px;
+    margin-top: 16px;
   }
   .toc__bar {
     display: block;
-    height: 3px;
-    border-radius: 3px;
-    background: var(--line);
+    height: 6px;
+    border: 1px solid var(--ink);
+    border-radius: 1px;
     overflow: hidden;
   }
   .toc__bar i {
     display: block;
     height: 100%;
-    background: var(--accent);
+    background: repeating-linear-gradient(-45deg, var(--ink) 0 2px, transparent 2px 4px);
     transform-origin: left;
     transform: scaleX(var(--read, 0));
   }
@@ -328,30 +358,31 @@ const jsonld = {
   .post__end {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin: 56px 0 0;
-    font-size: 12px;
-    letter-spacing: 0.3em;
+    gap: 8px;
+    margin-top: 48px;
+    font-size: 13px;
     color: var(--ink-3);
   }
-  .post__end span {
-    flex: 1;
-    height: 1px;
-    background: var(--line);
-  }
-  .post__end span:first-child {
-    background: linear-gradient(90deg, transparent, var(--line-2));
-  }
-  .post__end span:last-child {
-    background: linear-gradient(-90deg, transparent, var(--line-2));
+  .post__end-mark {
+    color: var(--red);
+    font-size: 11px;
   }
 
   .series {
-    margin-top: 40px;
-    padding: 24px 26px;
+    margin-top: 44px;
+    padding: 20px 22px 12px 34px;
+    background:
+      linear-gradient(90deg, transparent 20px, color-mix(in srgb, var(--red) 55%, transparent) 20px 21px, transparent 21px),
+      var(--sheet);
+    border: 1px solid var(--rule-2);
+    box-shadow: 4px 4px 0 var(--paper-2);
+  }
+  .series__name {
+    margin-top: 2px;
+    font-size: 22px;
   }
   .series ol {
-    margin-top: 14px;
+    margin-top: 10px;
     padding: 0;
     list-style: none;
   }
@@ -361,62 +392,67 @@ const jsonld = {
     align-items: baseline;
     gap: 12px;
     padding: 10px 0;
-    border-top: 1px dashed var(--line-2);
+    border-top: 1px solid var(--rule);
     font-weight: 500;
   }
   .series li a:hover {
-    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: var(--red);
+    text-underline-offset: 3px;
   }
   .series b {
     font-weight: 500;
     font-size: 12px;
-    color: var(--accent);
+    color: var(--red-ink);
   }
   .series__cur em {
     margin-left: auto;
-    font: normal 11px var(--f-mono);
-    padding: 3px 8px;
-    border-radius: 99px;
-    background: var(--accent-soft);
-    color: var(--accent);
+    font: normal 600 12px var(--f-sans);
+    padding: 0 6px;
+    background: var(--hi-soft);
   }
 
+  /* 上一篇 / 下一篇：两张并排的书签 */
   .pn {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-top: 40px;
+    margin-top: 44px;
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
   }
   .pn__a {
     display: grid;
-    gap: 10px;
-    padding: 20px 22px;
-    transition: transform 0.5s var(--ease);
-  }
-  .pn__a:hover {
-    transform: translateY(-3px);
+    gap: 8px;
+    align-content: start;
+    padding: 18px 20px 20px 0;
+    transition: background 0.2s;
   }
   .pn__a--next {
+    padding: 18px 0 20px 20px;
     text-align: right;
+    border-left: 1px solid var(--rule);
   }
   .pn__k {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11.5px;
-    color: var(--ink-3);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--red-ink);
+    transition: transform 0.3s var(--ease);
   }
-  .pn__a--next .pn__k {
-    justify-content: flex-end;
+  .pn__a:hover .pn__k {
+    transform: translateX(-4px);
+  }
+  .pn__a--next:hover .pn__k {
+    transform: translateX(4px);
   }
   .pn__t {
-    font-weight: 600;
-    line-height: 1.5;
+    font: 600 17px/1.5 var(--f-display);
+  }
+  .pn__a:hover .pn__t {
+    background: linear-gradient(var(--hi-soft), var(--hi-soft)) 0 88% / 100% 0.45em no-repeat;
   }
 
   .cmt {
-    margin-top: 40px;
-    padding: 22px 24px;
+    margin-top: 44px;
   }
   .cmt__head {
     display: flex;
@@ -426,14 +462,15 @@ const jsonld = {
     gap: 16px;
   }
   .cmt__t {
-    font-weight: 600;
+    font-size: 24px;
   }
   .cmt__d {
     margin-top: 4px;
-    font-size: 13px;
+    font-size: 13.5px;
+    max-width: 30em;
   }
   .cmt__d a {
-    color: var(--accent);
+    color: var(--red-ink);
     text-decoration: underline;
     text-underline-offset: 3px;
   }
@@ -441,7 +478,7 @@ const jsonld = {
     margin-top: 20px;
   }
 
-  /* ---------- 浮动工具 ---------- */
+  /* ---------- 浮动工具：一列实体按键 ---------- */
   .dock {
     position: fixed;
     right: max(18px, env(safe-area-inset-right));
@@ -449,16 +486,11 @@ const jsonld = {
     z-index: 45;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    width: 52px;
-    height: auto;
-    padding: 5px;
-    border-radius: 30px;
-    transform: translateY(20px);
+    gap: 8px;
+    transform: translateY(16px);
     opacity: 0;
     pointer-events: none;
-    transition: transform 0.6s var(--spring), opacity 0.4s;
+    transition: transform 0.4s var(--ease), opacity 0.3s;
   }
   .dock.show {
     transform: none;
@@ -469,47 +501,51 @@ const jsonld = {
     position: relative;
     display: grid;
     place-items: center;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    color: var(--ink-2);
-    transition: background 0.25s, color 0.25s;
-  }
-  .dock button:hover,
-  .dock button[aria-expanded='true'] {
-    background: color-mix(in srgb, var(--card) 80%, transparent);
+    width: 46px;
+    height: 46px;
+    border: 1.5px solid var(--ink);
+    border-radius: 6px;
+    background: var(--sheet);
     color: var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: transform 0.1s, box-shadow 0.1s, background 0.2s;
+  }
+  .dock button:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--ink);
+  }
+  .dock button[aria-expanded='true'] {
+    background: var(--hi);
+    color: #161513;
   }
   .dock__ring svg {
     position: absolute;
-    inset: 3px;
+    inset: 4px;
     transform: rotate(-90deg);
   }
   .dock__ring circle {
     fill: none;
-    stroke-width: 2.4;
+    stroke-width: 2.2;
   }
   .trk {
-    stroke: var(--line);
+    stroke: var(--rule);
   }
   .bar {
-    stroke: var(--accent);
+    stroke: var(--red);
     stroke-dasharray: 100;
     stroke-dashoffset: 100;
-    stroke-linecap: round;
     transition: stroke-dashoffset 0.15s linear;
   }
   .dock__pct {
     font-size: 11px;
     font-weight: 600;
-    color: var(--ink);
-    transition: opacity 0.2s, transform 0.3s var(--spring);
+    transition: opacity 0.2s, transform 0.25s var(--ease);
   }
   .dock__up {
     position: absolute;
     opacity: 0;
     transform: translateY(6px);
-    transition: opacity 0.2s, transform 0.3s var(--spring);
+    transition: opacity 0.2s, transform 0.25s var(--ease);
   }
   .dock__ring:hover .dock__pct {
     opacity: 0;
@@ -521,23 +557,22 @@ const jsonld = {
   }
   .sheet {
     position: fixed;
-    right: max(84px, calc(env(safe-area-inset-right) + 84px));
+    right: max(80px, calc(env(safe-area-inset-right) + 80px));
     bottom: calc(20px + env(safe-area-inset-bottom));
     z-index: 46;
-    width: min(300px, calc(100vw - 110px));
+    width: min(300px, calc(100vw - 104px));
     max-height: min(70vh, 520px);
     overflow: auto;
-    padding: 18px 18px 14px;
-    border-radius: 22px;
-    background: color-mix(in srgb, var(--card) 94%, transparent);
-    backdrop-filter: blur(20px) saturate(1.6);
-    -webkit-backdrop-filter: blur(20px) saturate(1.6);
-    box-shadow: inset 0 1px 0 var(--glass-edge), 0 0 0 1px var(--line), var(--shadow-lg);
+    padding: 16px 18px 14px;
+    border: 1.5px solid var(--ink);
+    border-radius: 6px;
+    background: var(--sheet);
+    box-shadow: 6px 6px 0 var(--ink);
     transform-origin: right bottom;
-    transform: scale(0.9) translateY(10px);
+    transform: translateY(8px) rotate(1deg);
     opacity: 0;
     visibility: hidden;
-    transition: transform 0.45s var(--spring), opacity 0.25s, visibility 0.25s;
+    transition: transform 0.3s var(--ease), opacity 0.2s, visibility 0.2s;
   }
   .sheet.open {
     transform: none;
@@ -548,29 +583,29 @@ const jsonld = {
   .sheet[data-view='toc'] .sheet__reader {
     display: none;
   }
+  .seg__l {
+    margin: 4px 0 8px;
+    font-size: 12.5px;
+  }
   .seg {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: 1fr;
-    gap: 4px;
-    padding: 4px;
-    margin-bottom: 10px;
-    border-radius: 14px;
-    background: var(--paper-2);
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
   }
-  .seg button {
-    height: 36px;
-    border-radius: 10px;
-    font-size: 14px;
+  .seg .key {
+    --h: 40px;
+    flex: 1;
+    font: 600 14px/1 var(--f-sans);
+    padding-bottom: 4px;
+    border-radius: 6px;
     color: var(--ink-2);
-    transition: background 0.25s, color 0.25s, box-shadow 0.25s;
   }
-  .seg button[aria-pressed='true'] {
-    background: var(--card);
-    color: var(--ink);
-    box-shadow: var(--shadow);
+  .seg .key[aria-pressed='true'] {
+    transform: translateY(3px);
+    background: linear-gradient(180deg, var(--key) 0 calc(100% - 1px), var(--key-side) calc(100% - 1px));
+    color: var(--red-ink);
   }
-  .seg button[data-font='serif'] {
+  .seg .key[data-font='serif'] {
     font-family: var(--f-serif-body);
   }
 
@@ -581,43 +616,50 @@ const jsonld = {
   }
   @media (max-width: 1180px) {
     .post__grid {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    .post__body {
-      grid-column: 1;
-      max-width: 700px;
-      width: 100%;
-      margin-inline: auto;
+      grid-template-columns: 150px minmax(0, 700px);
     }
     .post__aside {
       display: none;
     }
   }
-  @media (max-width: 760px) {
+  @media (max-width: 900px) {
     .post__head {
-      text-align: left;
+      grid-template-columns: 1fr;
     }
-    .crumb,
-    .post__meta {
-      justify-content: flex-start;
+    .stamp {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 18px;
     }
-    .post__meta {
-      gap: 8px 14px;
-      font-size: 13px;
+    .stamp__d {
+      font-size: 40px;
     }
+    .post__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .post__body {
+      grid-column: 1;
+      max-width: 700px;
+    }
+  }
+  @media (max-width: 760px) {
     .post__title {
       font-size: clamp(30px, 8.6vw, 42px);
     }
-    .dock {
-      bottom: calc(84px + env(safe-area-inset-bottom));
-      right: 12px;
+    .post__meta {
+      font-size: 12px;
     }
-    .sheet {
-      right: 74px;
-      bottom: calc(84px + env(safe-area-inset-bottom));
+    .post__meta > * + *::before {
+      margin: 0 8px;
     }
     .pn {
       grid-template-columns: 1fr;
+    }
+    .pn__a--next {
+      padding-left: 0;
+      border-left: 0;
+      border-top: 1px solid var(--rule);
     }
   }
 </style>

@@ -16,10 +16,10 @@ const posts = (await getPosts()).filter((p) => (p.data.tags as string[]).include
 const cards = await Promise.all(posts.map(cardData));
 ---
 <Base title={`#${t.name}`} description={`${t.name}：${t.description}。DeskBox 中带有该标签的文章。`}>
-  <PageHead eyebrow={`Tag · /${t.slug}`} title={`#${t.name}`} count={cards.length} lead={t.description}>
+  <PageHead eyebrow={`标签 · /${t.slug}`} title={`#${t.name}`} count={cards.length} lead={t.description}>
     <nav class="others rise" style="--i:3" aria-label="其他标签">
-      <a class="chip" href={url('/tags/')}>全部标签</a>
-      {tags.filter((x) => x.slug !== t.slug).map((x) => <a class="chip" href={tagUrl(x.slug)}>{x.name}</a>)}
+      <a class="tag tag--back" href={url('/tags/')}>← 全部标签</a>
+      {tags.filter((x) => x.slug !== t.slug).map((x) => <a class="tag" href={tagUrl(x.slug)}>{x.name}</a>)}
     </nav>
   </PageHead>
   <div class="wrap">
@@ -32,11 +32,8 @@ const cards = await Promise.all(posts.map(cardData));
   .others {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 10px 8px;
     margin-top: 24px;
-  }
-  .others .chip:first-child::before {
-    content: '←';
   }
   .rows {
     padding: 0;
@@ -46,7 +43,7 @@ const cards = await Promise.all(posts.map(cardData));
     text-align: center;
   }
   .empty a {
-    color: var(--accent);
+    color: var(--red-ink);
     display: inline-flex;
     align-items: center;
     gap: 4px;
