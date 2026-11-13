@@ -18,7 +18,7 @@ function htmlFiles(dir) {
 }
 
 // 用到 --f-display 的元素：h1–h4、.display 以及少数指定类名
-const SEL = 'h1, h2, h3, h4, .display, .row__title, .pv__title, .w-latest__t, .stats dd, .clock, .tag__n, .about__big, .about__card dd, blockquote, .foot__word';
+const SEL = 'h1, h2, h3, h4, .display, .row__title, .row__no, .pv__title, .brand__name, .rocker__body, .menu a, .sp__label, .stamp__d, .lead__desc, .ic__n, .idx h3, .about__big, .lib__h, .series__name, .pn__t, .r-t, blockquote, .foot__word, .foot__say';
 let chars = new Set('0123456789：，。、？！“”‘’（）《》·—…%#');
 const files = htmlFiles(DIST);
 for (const f of files) {

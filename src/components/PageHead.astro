@@ -3,36 +3,39 @@ interface Props { eyebrow: string; title: string; lead?: string; count?: number;
 const { eyebrow, title, lead, count, countLabel = '篇' } = Astro.props;
 ---
 <header class="ph wrap">
-  <p class="eyebrow rise">{eyebrow}</p>
-  <h1 class="ph__title display rise" style="--i:1">
-    <span data-decode="120">{title}</span>
-    {count !== undefined && <sup class="ph__count mono"><span data-filter-count>{count}</span> {countLabel}</sup>}
-  </h1>
+  <div class="ph__top rise">
+    <p class="kicker">{eyebrow}</p>
+    {count !== undefined && <p class="ph__count mono"><span data-filter-count>{count}</span> {countLabel}</p>}
+  </div>
+  <h1 class="ph__title display rise" style="--i:1">{title}</h1>
   {lead && <p class="ph__lead rise" style="--i:2">{lead}</p>}
   <slot />
 </header>
 <style>
   .ph {
-    padding-top: clamp(16px, 4vw, 48px);
+    padding-top: clamp(16px, 4vw, 40px);
     margin-bottom: clamp(32px, 5vw, 56px);
   }
-  .ph__title {
-    margin-top: 18px;
-    font-size: clamp(48px, 9vw, 120px);
-    letter-spacing: -0.04em;
-    line-height: 1;
+  .ph__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--ink);
   }
   .ph__count {
-    margin-left: 0.3em;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    vertical-align: super;
-    color: var(--accent);
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .ph__title {
+    margin-top: clamp(18px, 3vw, 30px);
+    font-size: clamp(46px, 8vw, 104px);
+    letter-spacing: -0.035em;
+    line-height: 1;
   }
   .ph__lead {
-    max-width: 36em;
-    margin-top: 22px;
+    max-width: 34em;
+    margin: 20px 0 0 clamp(0px, 16vw, 220px);
     font-size: clamp(16px, 1.3vw, 18px);
     line-height: 1.85;
     color: var(--ink-2);

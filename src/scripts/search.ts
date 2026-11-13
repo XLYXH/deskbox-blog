@@ -52,6 +52,7 @@ export function initSearch() {
     const my = ++seq;
     if (!q) return empty();
     tagsBox.hidden = true;
+    status.innerHTML = '<span class="tw">检索中……</span>';
     const pf = await loadPagefind();
     if (my !== seq) return;
     if (pf) {
@@ -98,6 +99,8 @@ export function initSearch() {
     loadPagefind();
   };
   $$('[data-search-open]').forEach((b) => (b.onclick = open));
+  const closeBtn = $('[data-search-close]', dlg);
+  if (closeBtn) closeBtn.onclick = () => dlg.close();
   if (!bound) {
     bound = true;
     addEventListener('keydown', (e) => {

@@ -5,7 +5,7 @@ export function initPreview() {
   const pv = $('[data-preview]');
   const rows = $$('[data-row]');
   if (!pv || !rows.length || !finePointer()) return;
-  const title = $('[data-pv-title]', pv)!, glyph = $('[data-pv-glyph]', pv)!, meta = $('[data-pv-meta]', pv)!;
+  const title = $('[data-pv-title]', pv)!, desc = $('[data-pv-desc]', pv)!, meta = $('[data-pv-meta]', pv)!;
   const img = $<HTMLImageElement>('[data-pv-img]', pv)!;
   let x = 0, y = 0, tx = 0, ty = 0, raf = 0, vx = 0;
   const loop = () => {
@@ -13,17 +13,16 @@ export function initPreview() {
     vx = nx - x;
     x = nx;
     y += (ty - y) * 0.16;
-    pv.style.transform = `translate(${x}px, ${y}px) rotate(${Math.max(-8, Math.min(8, vx * 0.6))}deg)`;
+    pv.style.transform = `translate(${x}px, ${y}px) rotate(${Math.max(-6, Math.min(6, vx * 0.5))}deg)`;
     raf = requestAnimationFrame(loop);
   };
   const sig = pageSignal();
   rows.forEach((r) => {
     r.addEventListener('pointerenter', (e) => {
       title.textContent = r.dataset.title || '';
-      glyph.textContent = r.dataset.glyph || '';
+      desc.textContent = r.dataset.desc || '';
       meta.textContent = r.dataset.meta || '';
       if (r.dataset.cover) { img.src = r.dataset.cover; pv.classList.add('has-img'); } else pv.classList.remove('has-img');
-      pv.style.setProperty('--hue', r.dataset.hue || '30');
       if (!pv.classList.contains('on')) { x = tx = e.clientX; y = ty = e.clientY; }
       pv.classList.add('on');
       if (!raf && !reduced()) raf = requestAnimationFrame(loop);

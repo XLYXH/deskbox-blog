@@ -8,23 +8,27 @@ const index = posts.map((p) => ({ t: p.data.title, d: p.data.description, u: pos
 ---
 <dialog class="sp" data-search aria-label="搜索文章">
   <div class="sp__panel" data-search-panel>
-    <div class="sp__field">
-      <Icon name="search" size={19} />
-      <input type="search" placeholder="搜索文章、标签或关键词…" autocomplete="off" spellcheck="false" aria-label="搜索关键词" data-search-input />
-      <kbd>Esc</kbd>
+    <div class="sp__head">
+      <span class="sp__label">检索</span>
+      <span class="sp__hint2 muted">标题 · 正文 · 标签</span>
+      <button type="button" class="sp__esc" data-search-close aria-label="关闭搜索"><kbd class="key">Esc</kbd></button>
     </div>
+    <label class="sp__field">
+      <Icon name="search" size={20} />
+      <input type="search" placeholder="想找点什么？" autocomplete="off" spellcheck="false" aria-label="搜索关键词" data-search-input />
+    </label>
     <div class="sp__body" data-search-body>
-      <p class="sp__hint mono" data-search-status>最近文章</p>
-      <ul class="sp__list" role="listbox" data-search-list></ul>
+      <p class="sp__status" data-search-status aria-live="polite">最近文章</p>
+      <ul class="sp__list" role="listbox" aria-label="搜索结果" data-search-list></ul>
       <div class="sp__tags" data-search-tags>
-        {tags.map((t) => <a class="chip" href={url(`/tags/${t.slug}/`)}>{t.name}</a>)}
+        {tags.map((t) => <a class="tag" href={url(`/tags/${t.slug}/`)}>{t.name}</a>)}
       </div>
     </div>
-    <div class="sp__foot mono">
-      <span><kbd>↑</kbd><kbd>↓</kbd> 选择</span>
-      <span><kbd>↵</kbd> 打开</span>
+    <div class="sp__foot">
+      <span><kbd class="key">↑</kbd><kbd class="key">↓</kbd> 选择</span>
+      <span><kbd class="key">↵</kbd> 打开</span>
       <span class="sp__grow"></span>
-      <span>Pagefind 全文索引</span>
+      <span class="mono">pagefind</span>
     </div>
   </div>
   <script type="application/json" data-search-index set:html={JSON.stringify(index)} />
@@ -38,101 +42,143 @@ const index = posts.map((p) => ({ t: p.data.title, d: p.data.description, u: pos
     max-width: none;
     height: 100%;
     max-height: none;
-    padding: clamp(70px, 12vh, 140px) var(--gutter) 24px;
+    padding: clamp(70px, 12vh, 130px) var(--gutter) 24px;
     border: 0;
     background: transparent;
     color: var(--ink);
   }
   .sp::backdrop {
-    background: rgb(15 14 12 / 0.28);
-    backdrop-filter: blur(6px);
+    background: rgb(22 21 19 / 0.42);
   }
   .sp[open] .sp__panel {
-    animation: sp-in 0.5s var(--spring);
+    animation: drop 0.32s var(--ease);
   }
-  .sp[open]::backdrop {
-    animation: fade 0.3s ease;
+  @keyframes drop {
+    from { opacity: 0; transform: translateY(-10px) rotate(-0.6deg); }
   }
-  @keyframes sp-in {
-    from { opacity: 0; transform: translateY(-14px) scale(0.97); }
-  }
-  @keyframes fade {
-    from { opacity: 0; }
-  }
+  /* 一张实心的纸：墨线边框 + 硬投影，没有毛玻璃 */
   .sp__panel {
-    width: min(100%, 640px);
+    width: min(100%, 620px);
     margin-inline: auto;
-    border-radius: 24px;
-    background: color-mix(in srgb, var(--card) 92%, transparent);
-    backdrop-filter: blur(24px) saturate(1.6);
-    -webkit-backdrop-filter: blur(24px) saturate(1.6);
-    box-shadow: inset 0 1px 0 var(--glass-edge), 0 0 0 1px var(--line), var(--shadow-lg);
+    background: var(--sheet);
+    border: 1.5px solid var(--ink);
+    border-radius: 6px;
+    box-shadow: 8px 8px 0 var(--ink);
     overflow: hidden;
+  }
+  .sp__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px 10px 18px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper-2);
+  }
+  .sp__label {
+    font: 700 15px/1 var(--f-display);
+  }
+  .sp__hint2 {
+    font-size: 12.5px;
+    flex: 1;
   }
   .sp__field {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 0 18px;
-    height: 62px;
-    border-bottom: 1px solid var(--line);
+    margin: 16px 16px 6px;
+    padding: 0 14px;
+    height: 56px;
+    border: 1.5px solid var(--ink);
+    border-radius: 4px;
+    background: var(--paper);
+    box-shadow: inset 3px 3px 0 var(--paper-2);
     color: var(--ink-2);
+    transition: box-shadow 0.2s;
+  }
+  .sp__field:focus-within {
+    box-shadow: inset 3px 3px 0 var(--paper-2), 0 0 0 3px var(--hi-soft);
   }
   .sp__field input {
     flex: 1;
+    min-width: 0;
     height: 100%;
     border: 0;
     background: none;
     outline: none;
-    font-size: 17px;
+    font-size: 18px;
     color: var(--ink);
+    caret-color: var(--red);
+  }
+  .sp__field input::placeholder {
+    color: var(--ink-3);
   }
   .sp__field input::-webkit-search-cancel-button {
     display: none;
   }
-  kbd {
-    font: 500 11px/1 var(--f-mono);
-    padding: 4px 6px;
-    border-radius: 6px;
-    border: 1px solid var(--line-2);
-    color: var(--ink-2);
-    background: var(--card);
-  }
   .sp__body {
-    max-height: min(56vh, 480px);
+    max-height: min(54vh, 460px);
     overflow: auto;
-    padding: 10px;
+    padding: 6px 16px 14px;
     overscroll-behavior: contain;
   }
-  .sp__hint {
-    padding: 8px 10px;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+  .sp__status {
+    padding: 8px 0 6px;
+    font-size: 12.5px;
     color: var(--ink-3);
+  }
+  /* 打字机式的加载：字一个个敲出来 */
+  .sp__status :global(.tw) {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    vertical-align: bottom;
+    border-right: 2px solid var(--red);
+    width: 5.2em;
+    animation: type 1.2s steps(5) infinite, caret 0.5s step-end infinite alternate;
+  }
+  @keyframes type {
+    from { width: 0; }
+  }
+  @keyframes caret {
+    50% { border-color: transparent; }
   }
   .sp__list {
     list-style: none;
     padding: 0;
   }
+  .sp__list :global(li + li) {
+    border-top: 1px dashed var(--rule);
+  }
   .sp__list :global(a) {
+    position: relative;
     display: grid;
     grid-template-columns: 1fr auto;
     gap: 2px 14px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    transition: background 0.2s;
+    padding: 12px 12px 12px 18px;
+  }
+  .sp__list :global(a::before) {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 14px;
+    bottom: 14px;
+    width: 3px;
+    background: var(--red);
+    transform: scaleY(0);
+    transition: transform 0.2s var(--ease);
   }
   .sp__list :global(a[aria-selected='true']),
   .sp__list :global(a:hover) {
-    background: var(--accent-soft);
+    background: var(--paper-2);
+  }
+  .sp__list :global(a[aria-selected='true']::before) {
+    transform: none;
   }
   .sp__list :global(.r-t) {
-    font-weight: 600;
-    font-size: 15px;
+    font: 600 16px/1.45 var(--f-display);
   }
   .sp__list :global(.r-date) {
-    font: 12px/1.9 var(--f-mono);
+    font: 12px/2 var(--f-mono);
     color: var(--ink-3);
   }
   .sp__list :global(.r-d) {
@@ -145,33 +191,46 @@ const index = posts.map((p) => ({ t: p.data.title, d: p.data.description, u: pos
     overflow: hidden;
   }
   .sp__list :global(mark) {
-    background: var(--mark);
+    background: var(--hi-soft);
     color: inherit;
-    border-radius: 3px;
     padding: 0 1px;
   }
   .sp__tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    padding: 10px 10px 6px;
+    gap: 8px;
+    padding: 12px 0 4px;
   }
   .sp__foot {
     display: flex;
-    gap: 16px;
-    padding: 12px 18px;
-    border-top: 1px solid var(--line);
-    font-size: 11.5px;
+    align-items: center;
+    gap: 18px;
+    padding: 10px 18px;
+    border-top: 1px solid var(--rule);
+    font-size: 12px;
     color: var(--ink-3);
   }
-  .sp__foot kbd {
+  .sp__foot .key {
+    --h: 22px;
     margin-right: 3px;
+    font-size: 11px;
   }
   .sp__grow {
     flex: 1;
   }
   @media (max-width: 600px) {
-    .sp__foot { display: none; }
-    .sp { padding-top: 64px; }
+    .sp__foot,
+    .sp__hint2 {
+      display: none;
+    }
+    .sp__head {
+      justify-content: space-between;
+    }
+    .sp {
+      padding-top: 18px;
+    }
+    .sp__panel {
+      box-shadow: 5px 5px 0 var(--ink);
+    }
   }
 </style>

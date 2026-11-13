@@ -43,7 +43,6 @@ export function rehypeCodeFrame() {
       const lines = text(node).replace(/\n$/, '').split('\n').length;
       const frame = el('figure', { className: ['code'], dataLang: lang }, [
         el('figcaption', { className: ['code__bar'] }, [
-          el('span', { className: ['code__dots'], ariaHidden: 'true' }, [el('i'), el('i'), el('i')]),
           el('span', { className: ['code__lang'] }, [{ type: 'text', value: lang }]),
           el('span', { className: ['code__lines'] }, [{ type: 'text', value: `${lines} 行` }]),
           el('button', { type: 'button', className: ['code__copy'], ariaLabel: '复制代码', dataCopy: '' }, [
