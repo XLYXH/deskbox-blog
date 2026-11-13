@@ -8,6 +8,10 @@ export const hueOf = (tags: string[]) => HUE[tags[0]] ?? 48;
 
 export async function cardData(p: Post) {
   const cover = p.data.cover ? (await getImage({ src: p.data.cover, width: 640, format: 'webp' })).src : '';
+  // 列表里的小封面：1x / 2x 两档
+  const thumb = p.data.cover ? (await getImage({ src: p.data.cover, width: 168, format: 'webp' })).src : '';
+  const thumb2 = p.data.cover ? (await getImage({ src: p.data.cover, width: 336, format: 'webp' })).src : '';
+  const thumbH = p.data.cover ? Math.round((168 * p.data.cover.height) / p.data.cover.width) : 0;
   const minutes = readingMinutes(p.body ?? '');
   return {
     slug: p.data.slug,
@@ -22,6 +26,9 @@ export async function cardData(p: Post) {
     hue: hueOf(p.data.tags),
     glyph: [...p.data.title.replace(/[^\p{L}\p{N}]/gu, '')][0] ?? '·',
     cover,
+    thumb,
+    thumb2,
+    thumbH,
     coverAlt: p.data.coverAlt ?? '',
     series: p.data.series,
   };

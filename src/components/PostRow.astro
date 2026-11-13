@@ -16,6 +16,11 @@ const no = String(index + 1).padStart(2, '0');
     <span class="row__side mono">
       <time datetime={p.iso}>{p.date}</time>
       <span>{p.minutes} 分钟</span>
+      {p.thumb && (
+        <span class="row__thumb" aria-hidden="true">
+          <img src={p.thumb} srcset={`${p.thumb} 168w, ${p.thumb2} 336w`} sizes="84px" width="168" height={p.thumbH} alt="" loading="lazy" decoding="async" />
+        </span>
+      )}
     </span>
   </a>
   {p.tags.length > 0 && (
@@ -85,6 +90,25 @@ const no = String(index + 1).padStart(2, '0');
     font-size: 12px;
     color: var(--ink-3);
   }
+  /* 有封面的文章：日期下面贴一张小照片 */
+  .row__thumb {
+    display: block;
+    width: 92px;
+    margin-top: 10px;
+    padding: 4px;
+    background: var(--sheet);
+    border: 1px solid var(--rule-2);
+    rotate: 2deg;
+    box-shadow: 2px 2px 0 var(--paper-2);
+    transition: rotate 0.3s var(--spring);
+  }
+  .row__thumb img {
+    width: 100%;
+    height: auto;
+  }
+  .row__link:hover .row__thumb {
+    rotate: -1deg;
+  }
   .row__side time {
     color: var(--ink-2);
   }
@@ -141,6 +165,14 @@ const no = String(index + 1).padStart(2, '0');
       gap: 12px;
       justify-items: start;
       padding: 0;
+    }
+    .row__thumb {
+      position: absolute;
+      right: 0;
+      bottom: 14px;
+      width: 72px;
+      margin: 0;
+      padding: 3px;
     }
     .row__main {
       grid-column: 2;
