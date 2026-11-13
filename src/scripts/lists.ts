@@ -86,6 +86,9 @@ export function initFilter() {
 
 /* ---------- 归档：时间线随滚动绘制 ---------- */
 export function initTimeline() {
+  // 写作日历在窄屏上横向滚动，默认滚到最近
+  const cal = $('[data-cal-scroll]');
+  if (cal) cal.scrollLeft = cal.scrollWidth;
   const tl = $('[data-timeline]');
   if (!tl) return;
   const onScroll = () => {

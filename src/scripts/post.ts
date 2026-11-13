@@ -151,6 +151,8 @@ function initDock() {
     sheet.classList.toggle('open', open);
     if (which) sheet.dataset.view = which;
     toggles.forEach((t) => t.setAttribute('aria-expanded', String(open && t.dataset.sheetToggle === sheet.dataset.view)));
+    // 目录在隐藏时量不到位置，打开后重新定位指示条
+    if (open) requestAnimationFrame(() => dispatchEvent(new Event('scroll')));
   };
   toggles.forEach((t) => t.addEventListener('click', () => {
     const which = t.dataset.sheetToggle!;

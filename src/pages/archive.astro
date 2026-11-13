@@ -41,8 +41,8 @@ const activeDays = byDay.size;
         <p class="eyebrow">Writing calendar · 最近一年</p>
         <p class="cal__legend mono" aria-hidden="true">少 <i class="l0"></i><i class="l1"></i><i class="l2"></i> 多</p>
       </div>
-      <div class="cal__scroll">
-        <div class="cal__grid" style={`--cols:${weeks.length}`}>
+      <div class="cal__scroll" data-cal-scroll>
+        <div class="cal__grid" style={`--cols:${weeks.length}`} role="img" aria-label={`最近一年的写作日历：${activeDays} 天有文章发布`}>
           <div class="cal__months" aria-hidden="true">
             {months.map((m) => <span style={`grid-column:${m.col + 1}`}>{m.label}</span>)}
           </div>
@@ -51,7 +51,7 @@ const activeDays = byDay.size;
               <div class="cal__col">
                 {w.map((c) =>
                   c.n ? (
-                    <a class={`cell l${Math.min(2, c.n)}`} href={postUrl(c.slug!)} title={`${c.key} · ${c.titles.join('、')}`} aria-label={`${c.key}：${c.titles.join('、')}`}></a>
+                    <span class={`cell l${Math.min(2, c.n)} hit`} title={`${c.key} · ${c.titles.join('、')}`}></span>
                   ) : (
                     <span class={`cell${c.future ? ' fut' : ''}`} title={c.key} aria-hidden="true"></span>
                   ),
@@ -162,10 +162,10 @@ const activeDays = byDay.size;
   .cell.fut {
     opacity: 0.35;
   }
-  a.cell {
+  span.cell.hit {
     box-shadow: 0 0 10px -2px rgb(var(--glow) / 0.6);
   }
-  a.cell:hover {
+  span.cell.hit:hover {
     transform: scale(1.7);
     position: relative;
     z-index: 1;
@@ -208,7 +208,7 @@ const activeDays = byDay.size;
     font-size: clamp(64px, 8vw, 112px);
     letter-spacing: -0.05em;
     line-height: 0.9;
-    color: color-mix(in srgb, var(--ink) 12%, transparent);
+    color: var(--ink-3);
   }
   .tl__y small {
     margin-top: 14px;
