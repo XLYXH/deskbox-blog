@@ -62,7 +62,7 @@ const jsonld = {
     {d.cover && (
       <figure class="post__cover wrap rise" style="--i:3">
         <div class="post__cover-in" data-tilt="3">
-          <Image src={d.cover} alt={d.coverAlt ?? ''} widths={[720, 1080, 1440]} sizes="(min-width: 1100px) 1040px, 100vw" loading="eager" fetchpriority="high" />
+          <Image src={d.cover} alt={d.coverAlt ?? ''} widths={[480, 720, 1080, 1440]} sizes="(min-width: 1100px) 1040px, 100vw" loading="eager" fetchpriority="high" />
         </div>
       </figure>
     )}
@@ -434,6 +434,8 @@ const jsonld = {
   }
   .cmt__d a {
     color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
   [data-comments]:not(:empty) {
     margin-top: 20px;

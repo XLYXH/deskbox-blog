@@ -71,6 +71,7 @@ export function initSearch() {
   };
   input.oninput = run;
   input.onkeydown = (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); dlg.close(); return; }
     const items = $$<HTMLAnchorElement>('a', list);
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();

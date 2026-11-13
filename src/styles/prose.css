@@ -376,7 +376,8 @@
   border-radius: 8px;
 }
 .prose .data-footnote-backref {
-  text-decoration: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
   color: var(--accent);
 }
 

@@ -64,7 +64,7 @@ const series = [...seriesMap.entries()].map(([name, list]) => ({ name, list: lis
 
   {feat && (
     <section class="feature wrap" aria-label="最新文章">
-      <a class="feature__card card spot rise" href={postUrl(featCard.slug)} data-tilt="4">
+      <a class="feature__card card spot" href={postUrl(featCard.slug)} data-tilt="4">
         <div class="feature__art">
           {feat.data.cover ? (
             <Image src={feat.data.cover} alt={feat.data.coverAlt ?? ''} widths={[640, 960, 1280]} sizes="(min-width: 1024px) 640px, 100vw" loading="eager" />
@@ -502,6 +502,37 @@ const series = [...seriesMap.entries()].map(([name, list]) => ({ name, list: lis
     color: var(--accent);
   }
 
+  /* 滚动驱动：精选卡片从裁切中展开，小组件视差 */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .feature {
+        animation: unclip linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 35%;
+      }
+      .sec-head h2 {
+        animation: slide-in linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 30%;
+      }
+      .desk {
+        animation: drift linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0 700px;
+      }
+    }
+  }
+  @keyframes unclip {
+    from { clip-path: inset(6% 7% 6% 7% round 40px); opacity: 0.3; }
+    to { clip-path: inset(0 0 0 0 round 28px); opacity: 1; }
+  }
+  @keyframes slide-in {
+    from { translate: -6% 0; opacity: 0; }
+    to { translate: 0 0; opacity: 1; }
+  }
+  @keyframes drift {
+    to { translate: 0 -60px; }
+  }
   @media (max-width: 1023px) {
     .hero {
       grid-template-columns: 1fr;

@@ -24,7 +24,7 @@ export default defineConfig({
     remarkPlugins: [remarkGfm],
     rehypePlugins: [rehypeHeadingAnchors, rehypeCodeFrame, rehypeExternalLinks, rehypeTableWrap],
     shikiConfig: {
-      themes: { light: 'github-light', dark: 'vesper' },
+      themes: { light: 'github-light-high-contrast', dark: 'vesper' },
       defaultColor: false,
       wrap: false,
     },
