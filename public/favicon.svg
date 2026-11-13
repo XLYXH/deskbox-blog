@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <style>.b{fill:#1b1a17}.l{fill:#e8590c}@media (prefers-color-scheme:dark){.b{fill:#ede9e1}.l{fill:#ffb054}}</style>
-  <path class="l" d="M12.5 3h7l6.5 13.5H6z" opacity=".9"/>
-  <rect class="b" x="4" y="15.5" width="24" height="13" rx="3.5"/>
-  <rect class="b" x="12.5" y="1.5" width="7" height="3" rx="1.5"/>
+  <rect x="1" y="1" width="30" height="30" rx="4" fill="#161513"/>
+  <text x="5.5" y="25" font-family="Fraunces, Georgia, serif" font-weight="700" font-size="24" fill="#f4f1e9">D</text>
+  <circle cx="25" cy="22.5" r="3" fill="#ff6b4f"/>
 </svg>
