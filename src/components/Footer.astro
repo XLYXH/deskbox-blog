@@ -41,6 +41,9 @@ const yearNow = new Date().getFullYear();
     border-top: 2px solid var(--ink);
     padding: clamp(36px, 5vw, 60px) 0 calc(24px + env(safe-area-inset-bottom));
     overflow: hidden;
+    /* 首屏外不参与布局，长文章的首次 layout 更轻 */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 760px;
   }
   .foot__grid {
     display: grid;
